@@ -58,7 +58,6 @@ input,select,textarea{font-family:inherit;outline:none}
   transition:.2s;box-shadow:0 8px 22px rgba(225,29,46,.3);
 }
 .btn-main:hover{filter:brightness(1.12);transform:translateY(-1px)}
-.btn-main:active{transform:translateY(0)}
 .btn-ghost{
   width:100%;padding:11px;border-radius:12px;font-size:13px;color:var(--muted);
   border:1px solid var(--line);margin-top:10px;transition:.2s;background:#0b0b11;
@@ -76,6 +75,7 @@ input,select,textarea{font-family:inherit;outline:none}
 }
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading-screen p{color:var(--muted);font-size:14px}
+.loading-screen .err{color:#ff4155;font-size:12px;text-align:center;padding:0 20px;line-height:1.7}
 
 .app{display:flex;flex-direction:row-reverse;height:100dvh;width:100%}
 .rail{
@@ -293,18 +293,16 @@ input,select,textarea{font-family:inherit;outline:none}
 </head>
 <body>
 
-<!-- ============ LOADING ============ -->
 <div class="loading-screen" id="loadingScreen">
   <div class="spinner"></div>
-  <p>جارٍ الاتصال بالخادم السحابي...</p>
+  <p id="loadingText">جارٍ الاتصال بالخادم السحابي...</p>
+  <p class="err hidden" id="loadingErr"></p>
 </div>
 
-<!-- ============ AUTH ============ -->
 <div class="auth-screen hidden" id="authScreen">
   <div class="auth-card">
     <div class="brand">iTeX</div>
     <div class="brand-sub">COMMUNITY NETWORK</div>
-
     <div class="field"><label>اسم المستخدم</label><input id="loginUser" placeholder="username" autocomplete="off"></div>
     <div class="field"><label>كلمة المرور</label><input id="loginPass" type="password" placeholder="••••••••"></div>
     <button class="btn-main" onclick="doLogin()">تسجيل الدخول</button>
@@ -313,11 +311,9 @@ input,select,textarea{font-family:inherit;outline:none}
   </div>
 </div>
 
-<!-- ============ APP ============ -->
 <div class="app hidden" id="appScreen">
   <aside class="rail" id="rail"></aside>
   <aside class="channels" id="channelsPanel"></aside>
-
   <main class="chat">
     <header class="chatHead">
       <button class="icon-btn mobile-only" onclick="togglePanel('channels')">☰</button>
@@ -332,13 +328,12 @@ input,select,textarea{font-family:inherit;outline:none}
       <button class="sendBtn" onclick="sendMessage()">➤</button>
     </div>
   </main>
-
   <aside class="friends" id="friendsPanel"></aside>
 </div>
 
 <div id="toasts"></div>
 
-<!-- ============ FIREBASE SDK (Compat) ============ -->
+<!-- Firebase SDK Compat -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics-compat.js"></script>
@@ -358,89 +353,110 @@ const firebaseConfig = {
   databaseURL: "https://policerp-a71c8-default-rtdb.firebaseio.com"
 };
 
-firebase.initializeApp(firebaseConfig);
-try { firebase.analytics(); } catch(e) {}
-const db = firebase.database();
+let db;
+let fbReady = false;
+try {
+  firebase.initializeApp(firebaseConfig);
+  try { firebase.analytics(); } catch(e){}
+  db = firebase.database();
+  fbReady = true;
+  console.log('🔥 Firebase initialized');
+} catch(e){
+  console.error('❌ Firebase init failed:', e);
+  document.getElementById('loadingText').textContent = 'فشل الاتصال بـ Firebase';
+  document.getElementById('loadingErr').textContent = e.message;
+  document.getElementById('loadingErr').classList.remove('hidden');
+}
 
 /* =====================================================================
-   State & Config
+   Config & State
    ===================================================================== */
 const OWNER_USER = 'i7';
 const OWNER_PASS = 'i7227711';
 const ROOT = 'itex';
 
-const $  = s => document.querySelector(s);
+const $ = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
 const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const now = () => Date.now();
 
-let DB = { users:{}, servers:{}, dms:{}, session:null };
+let DB = { users:{}, servers:{}, dms:{} };
 let ME = null;
 let state = { serverId:null, channelId:null, dmId:null, view:'server', readOnly:false, collapsed:false };
 
 /* =====================================================================
-   Firebase Realtime Sync
+   Firebase Sync
    ===================================================================== */
-function fbRef(path){ return db.ref(ROOT + '/' + path); }
+function ref(path){ return db.ref(ROOT + '/' + (path||'')); }
 
-function watchFirebase(){
-  // المستخدمون
-  fbRef('users').on('value', snap => {
-    DB.users = snap.val() || {};
-    if(ME) {
-      const fresh = DB.users[ME.id];
-      if(fresh) ME = fresh;
-      // إذا حُظر المستخدم الحالي — يخرج
-      if(ME && ME.banned){
-        toast('تم حظرك من الموقع');
-        setTimeout(() => logout(), 1200);
-        return;
-      }
-    }
-    renderAll();
-  });
-
-  // الخوادم
-  fbRef('servers').on('value', snap => {
-    DB.servers = snap.val() || {};
-    // ضمان وجود الخادم الأساسي وحق الأونر
-    ensureBaseServers();
-    renderAll();
-  });
-
-  // المحادثات الخاصة
-  fbRef('dms').on('value', snap => {
-    DB.dms = snap.val() || {};
-    renderAll();
-  });
+/* حفظ مستخدم واحد فقط بدون المساس بالبقية */
+function saveUser(id){
+  if(!DB.users[id]) return;
+  ref('users/' + id).set(DB.users[id]).catch(e => console.error('saveUser:', e));
+}
+/* حفظ خادم واحد */
+function saveServer(id){
+  if(!DB.servers[id]) return;
+  ref('servers/' + id).set(DB.servers[id]).catch(e => console.error('saveServer:', e));
+}
+/* حفظ محادثة خاصة واحدة */
+function saveDM(id){
+  if(!DB.dms[id]) return;
+  ref('dms/' + id).set(DB.dms[id]).catch(e => console.error('saveDM:', e));
 }
 
-function saveUsers(){ fbRef('users').set(DB.users); }
-function saveServers(){ fbRef('servers').set(DB.servers); }
-function saveDMs(){ fbRef('dms').set(DB.dms); }
+/* مراقبة البيانات */
+function watch(){
+  ref('users').on('value', snap => {
+    DB.users = snap.val() || {};
+    if(ME){
+      const fresh = DB.users[ME.id];
+      if(fresh){
+        ME = fresh;
+        if(ME.banned){
+          toast('تم حظرك من الموقع');
+          setTimeout(logout, 1200);
+          return;
+        }
+      }
+    }
+    if(typeof renderAll === 'function') renderAll();
+  }, err => console.error('users read error:', err));
 
-function saveAll(){ saveUsers(); saveServers(); saveDMs(); }
+  ref('servers').on('value', snap => {
+    DB.servers = snap.val() || {};
+    // تهيئة الخوادم الأساسية بعد أول قراءة
+    setTimeout(ensureBase, 100);
+    if(typeof renderAll === 'function') renderAll();
+  }, err => console.error('servers read error:', err));
 
-/* =====================================================================
-   Base Servers (iTeX العام + خادم الأونر)
-   ===================================================================== */
-function ensureBaseServers(){
+  ref('dms').on('value', snap => {
+    DB.dms = snap.val() || {};
+    if(typeof renderAll === 'function') renderAll();
+  }, err => console.error('dms read error:', err));
+}
+
+/* إنشاء الخوادم الأساسية فقط إذا لم تكن موجودة */
+function ensureBase(){
   let changed = false;
-  if(!DB.users) DB.users = {};
-  if(!DB.servers) DB.servers = {};
 
   // حساب الأونر
   let owner = Object.values(DB.users).find(u => u.username === OWNER_USER);
   if(!owner){
-    owner = {
-      id:'u_owner', username:OWNER_USER, password:OWNER_PASS, display:'i7', avatar:'',
+    const oid = 'u_owner';
+    DB.users[oid] = {
+      id:oid, username:OWNER_USER, password:OWNER_PASS, display:'i7', avatar:'',
       isOwner:true, star:true, banned:false, mute:false, timeout:0,
       friends:[], incoming:[], outgoing:[]
     };
-    DB.users[owner.id] = owner;
+    ref('users/' + oid).set(DB.users[oid]);
     changed = true;
   } else {
-    owner.isOwner = true; owner.star = true; owner.banned = false;
+    if(!owner.isOwner || !owner.star){
+      owner.isOwner = true; owner.star = true;
+      ref('users/' + owner.id).update({isOwner:true, star:true});
+    }
   }
 
   // الخادم الأساسي
@@ -450,8 +466,8 @@ function ensureBaseServers(){
       isPrivate:false, members:['u_owner'], adminIds:[], blocked:[], roles:[],
       categories:[
         { id:'cat_a', name:'نظام الإدارة', channels:[
-          { id:'ch_law',   name:'القوانين',       adminOnly:false, roles:[], messages:[] },
-          { id:'ch_intro', name:'التعريف',        adminOnly:false, roles:[], messages:[] }
+          { id:'ch_law',   name:'القوانين',  adminOnly:false, roles:[], messages:[] },
+          { id:'ch_intro', name:'التعريف',   adminOnly:false, roles:[], messages:[] }
         ]},
         { id:'cat_b', name:'الدرجة العامة', channels:[
           { id:'ch_gen', name:'الشات العام', adminOnly:false, roles:[], messages:[] }
@@ -461,6 +477,7 @@ function ensureBaseServers(){
         ]}
       ]
     };
+    ref('servers/s_main').set(DB.servers['s_main']);
     changed = true;
   }
 
@@ -472,7 +489,7 @@ function ensureBaseServers(){
       categories:[
         { id:'ocat_1', name:'التعليمات', channels:[
           { id:'och_info', name:'تعليمات الأونر', adminOnly:false, roles:[], messages:[
-            { id:uid(), uid:'u_owner', text:'مرحبًا بك في خادم الأونر. هذا الخادم خاص ولا يراه إلا الأونر والإدارة.', ts:now(), sys:true }
+            { id:uid(), uid:'u_owner', text:'مرحبًا بك في خادم الأونر.', ts:now(), sys:true }
           ]}
         ]},
         { id:'ocat_2', name:'الأونر', channels:[
@@ -482,10 +499,11 @@ function ensureBaseServers(){
         ]}
       ]
     };
+    ref('servers/s_owner').set(DB.servers['s_owner']);
     changed = true;
   }
 
-  if(changed) saveAll();
+  if(changed) console.log('🌱 Base servers created');
 }
 
 /* =====================================================================
@@ -548,7 +566,7 @@ function openModal(html){
   document.body.appendChild(w);
   return w;
 }
-function closeModal(){ const all = document.querySelectorAll('.overlay'); if(all.length) all[all.length-1].remove(); }
+function closeModal(){ const all = $$('.overlay'); if(all.length) all[all.length-1].remove(); }
 function isMuted(u){ return u.mute || (u.timeout && u.timeout > now()); }
 
 /* =====================================================================
@@ -562,7 +580,6 @@ function doLogin(){
   const u = Object.values(DB.users || {}).find(x => x.username.toLowerCase() === un.toLowerCase());
   if(!u || u.password !== pw){ msg.className = 'auth-msg'; msg.textContent = 'بيانات الدخول غير صحيحة'; return; }
   if(u.banned){ msg.className = 'auth-msg'; msg.textContent = 'هذا الحساب محظور من الموقع'; return; }
-  DB.session = u.id;
   try { localStorage.setItem('itex_session', u.id); } catch(e){}
   enterApp(u);
 }
@@ -587,14 +604,15 @@ function submitRegister(){
   if(!/^[A-Za-z0-9_.]{3,16}$/.test(un)){ toast('اسم المستخدم: 3-16 حرف إنجليزي/رقم'); return; }
   if(pw.length < 4){ toast('كلمة المرور قصيرة جدًا'); return; }
   if(Object.values(DB.users||{}).some(u => u.username.toLowerCase() === un.toLowerCase())){ toast('اسم المستخدم مستخدم بالفعل'); return; }
-  const u = { id:uid(), username:un, password:pw, display:dn, avatar:'',
+  const id = uid();
+  const u = { id, username:un, password:pw, display:dn, avatar:'',
               isOwner:false, star:false, banned:false, mute:false, timeout:0,
               friends:[], incoming:[], outgoing:[] };
-  DB.users[u.id] = u;
-  saveUsers();
-  logAction(null, `تم إنشاء حساب جديد: ${u.username}`, null);
+  ref('users/' + id).set(u)
+    .then(() => { DB.users[id] = u; toast('تم إنشاء الحساب ✔ يمكنك الدخول الآن', true); })
+    .catch(e => { console.error(e); toast('فشل الحفظ: ' + e.message); });
+  logAction(null, `تم إنشاء حساب جديد: ${un}`, null);
   closeModal();
-  toast('تم إنشاء الحساب ✔ يمكنك الدخول الآن', true);
 }
 
 function logout(){
@@ -624,16 +642,21 @@ function enterApp(u){
 /* =====================================================================
    Logging
    ===================================================================== */
-function logAction(actor, text, target){
+function logAction(actor, text){
   const line = `[${new Date().toLocaleString('ar-EG')}] ${actor ? '@'+actor.username : 'النظام'} — ${text}`;
   const s = DB.servers['s_owner'];
   if(!s || !s.categories) return;
-  const ch = s.categories.flatMap(c => c.channels).find(c => c.id === 'och_logs');
-  if(!ch) return;
-  if(!ch.messages) ch.messages = [];
-  ch.messages.push({ id:uid(), uid:'u_owner', text:line, ts:now(), sys:true });
-  if(ch.messages.length > 300) ch.messages.splice(0, ch.messages.length - 300);
-  saveServers();
+  let logCh = null;
+  for(const c of s.categories){
+    for(const ch of (c.channels||[])){
+      if(ch.id === 'och_logs'){ logCh = ch; break; }
+    }
+  }
+  if(!logCh) return;
+  if(!logCh.messages) logCh.messages = [];
+  logCh.messages.push({ id:uid(), uid:'u_owner', text:line, ts:now(), sys:true });
+  if(logCh.messages.length > 300) logCh.messages.splice(0, logCh.messages.length - 300);
+  saveServer('s_owner');
 }
 
 /* =====================================================================
@@ -661,9 +684,7 @@ function renderRail(){
     b.onclick = () => { openServer(s.id); closePanels(); };
     rail.appendChild(b);
   });
-
   const sep = document.createElement('div'); sep.className = 'rail-sep'; rail.appendChild(sep);
-
   const add = document.createElement('button');
   add.className = 'srv add'; add.textContent = '+'; add.title = 'إنشاء خادم';
   add.onclick = openCreateServer;
@@ -880,13 +901,15 @@ function openChannel(id){
   renderAll(); closePanels();
 }
 function findDM(a, b){
-  return Object.values(DB.dms||{}).find(d => d.users.includes(a) && d.users.includes(b));
+  return Object.values(DB.dms||{}).find(d => (d.users||[]).includes(a) && (d.users||[]).includes(b));
 }
 function openDMWith(userId){
   let dm = findDM(ME.id, userId);
   if(!dm){
-    dm = { id:uid(), users:[ME.id, userId], messages:[] };
-    DB.dms[dm.id] = dm; saveDMs();
+    const id = uid();
+    dm = { id, users:[ME.id, userId], messages:[] };
+    DB.dms[id] = dm;
+    ref('dms/' + id).set(dm);
   }
   state.view = 'dm'; state.dmId = dm.id; state.readOnly = false;
   renderAll(); closePanels();
@@ -894,7 +917,7 @@ function openDMWith(userId){
 function openDMOwner(dmId){
   state.view = 'dm'; state.dmId = dmId;
   const dm = DB.dms[dmId];
-  state.readOnly = !(dm && dm.users.includes(ME.id));
+  state.readOnly = !(dm && (dm.users||[]).includes(ME.id));
   renderAll(); closePanels();
 }
 function openUserInfo(userId){
@@ -961,14 +984,17 @@ function sendMessage(){
     if(!dm.messages) dm.messages = [];
     dm.messages.push({ id:uid(), uid:ME.id, text, ts:now() });
     if(dm.messages.length > 500) dm.messages.splice(0, dm.messages.length - 500);
-    saveDMs();
+    saveDM(dm.id);
   } else {
+    const s = currentServer();
     const ch = currentChannel();
-    if(!ch) return;
+    if(!s || !ch) return;
     if(!ch.messages) ch.messages = [];
     ch.messages.push({ id:uid(), uid:ME.id, text, ts:now() });
     if(ch.messages.length > 500) ch.messages.splice(0, ch.messages.length - 500);
-    saveServers();
+    // تحديث موضعي — لا نكتب الخادم كامل
+    ref('servers/' + s.id + '/categories').set(s.categories)
+      .catch(e => console.error('msg save:', e));
   }
   input.value = '';
   renderChat();
@@ -987,17 +1013,18 @@ function handleCommand(text){
   if(!target){ toast('لم يتم العثور على العضو'); return true; }
   if(target.isOwner){ toast('لا يمكن تنفيذ الأمر على الأونر'); return true; }
 
-  if(cmd === 'ban'){ target.banned = true; logAction(ME, `حظر العضو @${target.username}`, target); toast('تم حظر العضو', true); }
-  if(cmd === 'unban'){ target.banned = false; logAction(ME, `فك الحظر عن @${target.username}`, target); toast('تم فك الحظر', true); }
-  if(cmd === 'mute'){ target.mute = true; logAction(ME, `كتم العضو @${target.username}`, target); toast('تم الكتم', true); }
-  if(cmd === 'unmute'){ target.mute = false; logAction(ME, `فك الكتم عن @${target.username}`, target); toast('تم فك الكتم', true); }
+  if(cmd === 'ban'){ target.banned = true; logAction(ME, `حظر العضو @${target.username}`); toast('تم حظر العضو', true); }
+  if(cmd === 'unban'){ target.banned = false; logAction(ME, `فك الحظر عن @${target.username}`); toast('تم فك الحظر', true); }
+  if(cmd === 'mute'){ target.mute = true; logAction(ME, `كتم العضو @${target.username}`); toast('تم الكتم', true); }
+  if(cmd === 'unmute'){ target.mute = false; logAction(ME, `فك الكتم عن @${target.username}`); toast('تم فك الكتم', true); }
   if(cmd === 'tw' || cmd === 'timeout'){
     const mins = parseInt(parts[2]) || 10;
     target.timeout = now() + mins * 60000;
-    logAction(ME, `تايم أوت ${mins} دقيقة للعضو @${target.username}`, target);
+    logAction(ME, `تايم أوت ${mins} دقيقة للعضو @${target.username}`);
     toast(`تم إعطاء تايم أوت ${mins} دقيقة`, true);
   }
-  saveUsers();
+  DB.users[target.id] = target;
+  saveUser(target.id);
   renderAll();
   return true;
 }
@@ -1018,8 +1045,10 @@ function sendFriendRequest(){
   ME.outgoing.push(u.id);
   u.incoming.push(ME.id);
   DB.users[ME.id] = ME; DB.users[u.id] = u;
-  logAction(ME, `أرسل طلب صداقة إلى @${u.username}`, u);
-  saveUsers(); inp.value = ''; renderFriends();
+  saveUser(ME.id); saveUser(u.id);
+  logAction(ME, `أرسل طلب صداقة إلى @${u.username}`);
+  inp.value = '';
+  renderFriends();
   toast('تم إرسال طلب الصداقة ✔', true);
 }
 function acceptRequest(userId){
@@ -1029,13 +1058,17 @@ function acceptRequest(userId){
   ME.friends = ME.friends || []; u.friends = u.friends || [];
   if(!ME.friends.includes(userId)) ME.friends.push(userId);
   if(!u.friends.includes(ME.id)) u.friends.push(ME.id);
-  if(!findDM(ME.id, userId)){
-    const dm = { id:uid(), users:[ME.id, userId], messages:[] };
-    DB.dms[dm.id] = dm;
-  }
   DB.users[ME.id] = ME; DB.users[u.id] = u;
-  logAction(ME, `قبل طلب الصداقة من @${u.username}`, u);
-  saveAll(); renderAll();
+  saveUser(ME.id); saveUser(u.id);
+
+  if(!findDM(ME.id, userId)){
+    const id = uid();
+    const dm = { id, users:[ME.id, userId], messages:[] };
+    DB.dms[id] = dm;
+    ref('dms/' + id).set(dm);
+  }
+  logAction(ME, `قبل طلب الصداقة من @${u.username}`);
+  renderAll();
   toast('تمت الإضافة ✔ يمكنكما التحدث الآن', true);
 }
 function rejectRequest(userId){
@@ -1043,7 +1076,8 @@ function rejectRequest(userId){
   ME.incoming = (ME.incoming||[]).filter(i => i !== userId);
   u.outgoing = (u.outgoing||[]).filter(i => i !== ME.id);
   DB.users[ME.id] = ME; DB.users[u.id] = u;
-  saveUsers(); renderFriends();
+  saveUser(ME.id); saveUser(u.id);
+  renderFriends();
   toast('تم رفض الطلب');
 }
 
@@ -1080,11 +1114,15 @@ function createServer(){
       ]
     };
     DB.servers[id] = s;
-    logAction(ME, `أنشأ خادمًا جديدًا: ${name}`, null);
-    saveServers(); closeModal();
-    state.view = 'server'; state.serverId = id; state.channelId = s.categories[0].channels[0].id;
-    renderAll();
-    toast('تم إنشاء الخادم ✔', true);
+    ref('servers/' + id).set(s)
+      .then(() => {
+        logAction(ME, `أنشأ خادمًا جديدًا: ${name}`);
+        closeModal();
+        state.view = 'server'; state.serverId = id; state.channelId = s.categories[0].channels[0].id;
+        renderAll();
+        toast('تم إنشاء الخادم ✔', true);
+      })
+      .catch(e => { console.error(e); toast('فشل: ' + e.message); });
   };
 
   if(file){
@@ -1099,16 +1137,13 @@ function createServer(){
    ===================================================================== */
 function openServerSettings(){
   const s = currentServer(); if(!s) return;
-  const admin = isServerAdmin(s, ME);
-  if(!admin) return;
+  if(!isServerAdmin(s, ME)) return;
 
   openModal(`
     <h3>إعدادات الخادم <span class="tag">${esc(s.name)}</span></h3>
     <div class="row"><label>اسم الخادم</label><input id="ssName" value="${esc(s.name)}"></div>
     <div class="row"><label>صورة الخادم</label><input id="ssIcon" type="file" accept="image/*"></div>
-
     <label class="chk"><input type="checkbox" id="ssPrivate" ${s.isPrivate?'checked':''}> خادم خاص (لا يراه إلا الأعضاء المضافون)</label>
-
     <div class="row" style="margin-top:14px">
       <label>إضافة عضو للخادم (يوزر)</label>
       <input id="ssMember" placeholder="username">
@@ -1117,7 +1152,6 @@ function openServerSettings(){
       <label>حجب الخادم عن عضو — Admin Straight (يوزر)</label>
       <input id="ssBlock" placeholder="username">
     </div>
-
     <div class="modal-actions">
       <button class="mOk" onclick="saveServerSettings()">حفظ التغييرات</button>
       <button class="mNo" onclick="closeModal()">إغلاق</button>
@@ -1136,7 +1170,7 @@ function saveServerSettings(){
     const u = Object.values(DB.users).find(x => x.username.toLowerCase() === memName.toLowerCase());
     if(u && !(s.members||[]).includes(u.id)){
       s.members = s.members || []; s.members.push(u.id);
-      logAction(ME, `أضاف @${u.username} إلى خادم ${s.name}`, u);
+      logAction(ME, `أضاف @${u.username} إلى خادم ${s.name}`);
       toast('تمت إضافة العضو ✔', true);
     } else if(!u) toast('العضو غير موجود');
   }
@@ -1146,18 +1180,25 @@ function saveServerSettings(){
     if(u && !u.isOwner){
       s.blocked = s.blocked || [];
       if(!s.blocked.includes(u.id)) s.blocked.push(u.id);
-      logAction(ME, `حجب خادم ${s.name} عن @${u.username}`, u);
+      logAction(ME, `حجب خادم ${s.name} عن @${u.username}`);
       toast('تم حجب الخادم عن العضو ✔', true);
     } else if(u && u.isOwner) toast('لا يمكن حجب الأونر');
     else toast('العضو غير موجود');
   }
 
   const file = $('#ssIcon').files[0];
+  const persist = () => {
+    DB.servers[s.id] = s;
+    ref('servers/' + s.id).update({
+      name: s.name, isPrivate: s.isPrivate,
+      members: s.members, blocked: s.blocked, icon: s.icon || ''
+    }).then(() => { closeModal(); renderAll(); });
+  };
   if(file){
     const r = new FileReader();
-    r.onload = e => { s.icon = e.target.result; DB.servers[s.id] = s; saveServers(); closeModal(); renderAll(); };
+    r.onload = e => { s.icon = e.target.result; persist(); };
     r.readAsDataURL(file);
-  } else { DB.servers[s.id] = s; saveServers(); closeModal(); renderAll(); }
+  } else persist();
 }
 
 function addCategory(){
@@ -1176,9 +1217,12 @@ function createCategory(){
   const name = $('#newCatName').value.trim();
   if(!name){ toast('اكتب اسم الكاتجوري'); return; }
   s.categories.push({ id:uid(), name, channels:[] });
-  logAction(ME, `أنشأ كاتجوري "${name}" في خادم ${s.name}`, null);
-  DB.servers[s.id] = s; saveServers(); closeModal(); renderAll();
-  toast('تمت إضافة الكاتجوري ✔', true);
+  DB.servers[s.id] = s;
+  ref('servers/' + s.id + '/categories').set(s.categories).then(() => {
+    logAction(ME, `أنشأ كاتجوري "${name}" في خادم ${s.name}`);
+    closeModal(); renderAll();
+    toast('تمت إضافة الكاتجوري ✔', true);
+  });
 }
 
 function addChannel(catId){
@@ -1189,7 +1233,7 @@ function addChannel(catId){
     <div class="row"><label>اسم الروم</label><input id="newChName" placeholder="مثال: الشات العام"></div>
     <label class="chk"><input type="checkbox" id="newChAdmin"> روم للإدارة فقط 🔒</label>
     <div class="row" style="margin-top:12px">
-      <label>الصلاحيات — من يمكنه رؤية الروم؟ (اتركه فارغًا للجميع)</label>
+      <label>الصلاحيات — من يمكنه رؤية الروم؟</label>
       ${roles.length ? roles.map(r => `
         <label class="chk"><input type="checkbox" class="roleChk" value="${r.id}"> ${esc(r.name)}</label>
       `).join('') : '<div class="empty">لا توجد رتب — أنشئ رتبًا من إعدادات الخادم</div>'}
@@ -1209,11 +1253,14 @@ function createChannel(catId){
   const roles = [...document.querySelectorAll('.roleChk:checked')].map(i => i.value);
   const ch = { id:uid(), name, adminOnly, roles, messages:[] };
   cat.channels.push(ch);
-  logAction(ME, `أنشأ روم "${name}" في خادم ${s.name}`, null);
-  DB.servers[s.id] = s; saveServers(); closeModal();
-  state.view = 'server'; state.channelId = ch.id;
-  renderAll();
-  toast('تم إنشاء الروم ✔', true);
+  DB.servers[s.id] = s;
+  ref('servers/' + s.id + '/categories').set(s.categories).then(() => {
+    logAction(ME, `أنشأ روم "${name}" في خادم ${s.name}`);
+    closeModal();
+    state.view = 'server'; state.channelId = ch.id;
+    renderAll();
+    toast('تم إنشاء الروم ✔', true);
+  });
 }
 
 /* =====================================================================
@@ -1225,8 +1272,8 @@ function openProfileEditor(){
     <div class="hint">اختر ما تريد تغييره ثم اضغط Done.</div>
     <div class="row"><label>الاسم الظاهر</label><input id="pfDisplay" value="${esc(ME.display)}"></div>
     <div class="row"><label>اسم المستخدم</label><input id="pfUser" value="${esc(ME.username)}"></div>
-    <div class="row"><label>كلمة المرور الجديدة (اتركها فارغة لعدم التغيير)</label><input id="pfPass" type="password" placeholder="••••••••"></div>
-    <div class="row"><label>الصورة الشخصية (من الألبوم)</label><input id="pfAvatar" type="file" accept="image/*"></div>
+    <div class="row"><label>كلمة المرور الجديدة</label><input id="pfPass" type="password" placeholder="اتركها فارغة لعدم التغيير"></div>
+    <div class="row"><label>الصورة الشخصية</label><input id="pfAvatar" type="file" accept="image/*"></div>
     <div class="modal-actions">
       <button class="mOk" onclick="saveProfile()">Done ✓</button>
       <button class="mNo" onclick="closeModal()">إلغاء</button>
@@ -1249,7 +1296,12 @@ function saveProfile(){
     if(pw.length < 4){ toast('كلمة المرور قصيرة'); return; }
     ME.password = pw;
   }
-  const finish = () => { DB.users[ME.id] = ME; saveUsers(); closeModal(); renderAll(); toast('تم تحديث الحساب ✔', true); };
+  const finish = () => {
+    DB.users[ME.id] = ME;
+    saveUser(ME.id);
+    closeModal(); renderAll();
+    toast('تم تحديث الحساب ✔', true);
+  };
   if(file){
     const r = new FileReader();
     r.onload = e => { ME.avatar = e.target.result; finish(); };
@@ -1264,10 +1316,8 @@ function openAdminPanel(){
   if(!ME.isOwner) return;
   openModal(`
     <h3>لوحة تحكم الأونر <span class="tag">OWNER</span></h3>
-    <div class="hint">تحكم كامل بالموقع: الحظر، الكتم، التايم أوت، حذف الخوادم، والتوثيق ⭐</div>
-
+    <div class="hint">تحكم كامل: الحظر، الكتم، التايم أوت، حذف الخوادم، والتوثيق ⭐</div>
     <div class="row"><label>اسم المستخدم للعضو المستهدف</label><input id="adUser" placeholder="username"></div>
-
     <div class="row">
       <label>الإجراء</label>
       <select id="adAction">
@@ -1281,13 +1331,10 @@ function openAdminPanel(){
         <option value="delserver">حذف خادم يملكه العضو</option>
       </select>
     </div>
-
     <div class="row"><label>المدة بالدقائق (للتايم أوت فقط)</label><input id="adMins" type="number" value="10" min="1"></div>
-
     <div class="row" id="adSrvRow" style="display:none">
       <label>اسم الخادم المراد حذفه</label><input id="adSrvName" placeholder="اسم الخادم">
     </div>
-
     <div class="modal-actions">
       <button class="mOk" onclick="applyAdminAction()">تنفيذ</button>
       <button class="mNo" onclick="closeModal()">إغلاق</button>
@@ -1308,75 +1355,69 @@ function applyAdminAction(){
 
   switch(action){
     case 'ban':
-      u.banned = true;
-      logAction(ME, `حظر العضو @${u.username} من الموقع`, u);
-      toast('تم الحظر ✔', true); break;
+      u.banned = true; logAction(ME, `حظر العضو @${u.username}`); toast('تم الحظر ✔', true); break;
     case 'unban':
-      u.banned = false;
-      logAction(ME, `فك الحظر عن @${u.username}`, u);
-      toast('تم فك الحظر ✔', true); break;
+      u.banned = false; logAction(ME, `فك الحظر عن @${u.username}`); toast('تم فك الحظر ✔', true); break;
     case 'timeout':
       u.timeout = now() + mins * 60000;
-      logAction(ME, `تايم أوت ${mins} دقيقة للعضو @${u.username}`, u);
+      logAction(ME, `تايم أوت ${mins} دقيقة للعضو @${u.username}`);
       toast(`تم إعطاء تايم أوت ${mins} دقيقة ✔`, true); break;
     case 'mute':
-      u.mute = true;
-      logAction(ME, `كتم العضو @${u.username}`, u);
-      toast('تم الكتم ✔', true); break;
+      u.mute = true; logAction(ME, `كتم العضو @${u.username}`); toast('تم الكتم ✔', true); break;
     case 'unmute':
       u.mute = false; u.timeout = 0;
-      logAction(ME, `فك الكتم عن @${u.username}`, u);
-      toast('تم فك الكتم ✔', true); break;
+      logAction(ME, `فك الكتم عن @${u.username}`); toast('تم فك الكتم ✔', true); break;
     case 'verify':
-      u.star = true;
-      logAction(ME, `وثّق العضو @${u.username} ⭐`, u);
-      toast('تم التوثيق ⭐', true); break;
+      u.star = true; logAction(ME, `وثّق العضو @${u.username} ⭐`); toast('تم التوثيق ⭐', true); break;
     case 'unverify':
-      u.star = false;
-      logAction(ME, `أزال توثيق @${u.username}`, u);
-      toast('تم إزالة التوثيق', true); break;
+      u.star = false; logAction(ME, `أزال توثيق @${u.username}`); toast('تم إزالة التوثيق', true); break;
     case 'delserver': {
       const sn = $('#adSrvName').value.trim();
       const srv = Object.values(DB.servers).find(s => s.ownerId === u.id && s.name.toLowerCase() === sn.toLowerCase());
       if(!srv){ toast('لم يتم العثور على الخادم'); return; }
       if(srv.id === 's_main' || srv.id === 's_owner'){ toast('لا يمكن حذف خادم أساسي'); return; }
       delete DB.servers[srv.id];
+      ref('servers/' + srv.id).remove();
       if(state.serverId === srv.id){ state.serverId = 's_main'; pickFirstChannel('s_main'); }
-      logAction(ME, `حذف خادم "${srv.name}" المملوك لـ @${u.username}`, u);
-      saveServers();
+      logAction(ME, `حذف خادم "${srv.name}" المملوك لـ @${u.username}`);
       toast('تم حذف الخادم ✔', true); break;
     }
   }
   DB.users[u.id] = u;
-  saveUsers(); closeModal(); renderAll();
+  saveUser(u.id);
+  closeModal(); renderAll();
 }
 
 /* =====================================================================
    Init
    ===================================================================== */
 (function init(){
-  ensureBaseServers();
-  watchFirebase();
+  if(!fbReady){
+    return;
+  }
 
-  // انتظار أول تحميل من Firebase
-  let waited = 0;
-  const check = setInterval(() => {
-    waited += 100;
-    if(Object.keys(DB.users).length > 0 || waited > 4000){
-      clearInterval(check);
-      $('#loadingScreen').classList.add('hidden');
+  // بدء المراقبة
+  watch();
 
-      // استرجاع الجلسة
-      let savedId = null;
-      try { savedId = localStorage.getItem('itex_session'); } catch(e){}
-      const saved = savedId ? DB.users[savedId] : null;
-      if(saved && !saved.banned){
-        enterApp(saved);
-      } else {
-        $('#authScreen').classList.remove('hidden');
-      }
+  // بعد أول ثانية، تهيئة الخوادم الأساسية
+  setTimeout(ensureBase, 800);
+
+  // شاشة الدخول
+  setTimeout(() => {
+    // أعد تشغيل ensureBase بعد التحميل الكامل
+    ensureBase();
+    $('#loadingScreen').classList.add('hidden');
+
+    let savedId = null;
+    try { savedId = localStorage.getItem('itex_session'); } catch(e){}
+    const saved = savedId ? DB.users[savedId] : null;
+
+    if(saved && !saved.banned){
+      enterApp(saved);
+    } else {
+      $('#authScreen').classList.remove('hidden');
     }
-  }, 100);
+  }, 1500);
 })();
 
 window.addEventListener('resize', () => {
