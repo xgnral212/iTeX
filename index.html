@@ -1,736 +1,1388 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MysteryLife RP | Official Community</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
-        
-        :root {
-            --primary: #ff0000;
-            --bg-dark: #0a0a0a;
-            --bg-card: #141414;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>iTeX — Community Network</title>
+<style>
+:root{
+  --bg:#07070a; --panel:#101017; --panel2:#15151e; --panel3:#1b1b26;
+  --line:#242433; --text:#e9e9f2; --muted:#8b8b9e;
+  --accent:#e11d2e; --accent2:#ff4155; --gold:#ffc53d; --green:#25c26e;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  font-family:'Segoe UI',Tahoma,'Noto Kufi Arabic',sans-serif;
+  background:var(--bg);color:var(--text);overflow:hidden;height:100dvh;
+}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select,textarea{font-family:inherit;outline:none}
+::-webkit-scrollbar{width:7px;height:7px}
+::-webkit-scrollbar-thumb{background:#2a2a3a;border-radius:8px}
+::-webkit-scrollbar-track{background:transparent}
+.hidden{display:none!important}
 
-        body {
-            font-family: 'Cairo', sans-serif;
-            background-color: var(--bg-dark);
-            color: #fff;
-            margin: 0;
-            overflow-x: hidden;
-        }
+.auth-screen{
+  position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+  background:
+    radial-gradient(circle at 20% 15%,rgba(225,29,46,.18),transparent 45%),
+    radial-gradient(circle at 80% 85%,rgba(225,29,46,.12),transparent 45%),
+    #07070a;
+  z-index:500;padding:18px;
+}
+.auth-card{
+  width:100%;max-width:400px;background:linear-gradient(160deg,#14141d,#0d0d13);
+  border:1px solid var(--line);border-radius:22px;padding:34px 26px 26px;
+  box-shadow:0 30px 80px rgba(0,0,0,.75),inset 0 1px 0 rgba(255,255,255,.04);
+  animation:pop .45s cubic-bezier(.2,.9,.3,1.3);
+}
+@keyframes pop{from{opacity:0;transform:translateY(24px) scale(.96)}to{opacity:1;transform:none}}
+.brand{
+  font-size:40px;font-weight:900;letter-spacing:-1px;text-align:center;
+  background:linear-gradient(92deg,#fff 10%,var(--accent2) 60%,var(--accent));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  font-style:italic;
+}
+.brand-sub{text-align:center;color:var(--muted);font-size:10px;letter-spacing:5px;margin-top:4px;margin-bottom:26px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+.field input{
+  width:100%;padding:13px 14px;border-radius:12px;background:#0b0b11;
+  border:1px solid var(--line);color:var(--text);font-size:14px;transition:.2s;
+}
+.field input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(225,29,46,.14)}
+.btn-main{
+  width:100%;padding:13px;border-radius:12px;font-weight:700;font-size:15px;
+  background:linear-gradient(92deg,var(--accent),#a8121f);color:#fff;margin-top:8px;
+  transition:.2s;box-shadow:0 8px 22px rgba(225,29,46,.3);
+}
+.btn-main:hover{filter:brightness(1.12);transform:translateY(-1px)}
+.btn-main:active{transform:translateY(0)}
+.btn-ghost{
+  width:100%;padding:11px;border-radius:12px;font-size:13px;color:var(--muted);
+  border:1px solid var(--line);margin-top:10px;transition:.2s;background:#0b0b11;
+}
+.btn-ghost:hover{color:var(--text);border-color:#3a3a4d}
+.auth-msg{text-align:center;font-size:13px;margin-top:12px;min-height:18px;color:var(--accent2)}
+.auth-msg.ok{color:var(--green)}
+.loading-screen{
+  position:fixed;inset:0;background:#07070a;z-index:9999;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;
+}
+.spinner{
+  width:52px;height:52px;border:4px solid #1b1b26;border-top-color:var(--accent);
+  border-radius:50%;animation:spin 1s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-screen p{color:var(--muted);font-size:14px}
 
-        .ml-glass {
-            background: rgba(20, 20, 20, 0.95);
-            backdrop-filter: blur(10px);
-            border: 1px solid #333;
-        }
+.app{display:flex;flex-direction:row-reverse;height:100dvh;width:100%}
+.rail{
+  width:76px;flex:0 0 76px;background:#0a0a10;border-left:1px solid var(--line);
+  display:flex;flex-direction:column;align-items:center;gap:10px;
+  padding:12px 0;overflow-y:auto;overflow-x:hidden;
+}
+.rail::-webkit-scrollbar{width:0}
+.srv{
+  width:48px;height:48px;border-radius:16px;background:var(--panel3);
+  display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;
+  color:var(--muted);transition:.2s;flex:0 0 auto;overflow:hidden;position:relative;
+  border:1px solid transparent;
+}
+.srv img{width:100%;height:100%;object-fit:cover}
+.srv:hover{border-radius:14px;background:var(--accent);color:#fff;transform:translateY(-2px)}
+.srv.active{border-radius:14px;background:linear-gradient(140deg,var(--accent),#8f0f1b);color:#fff;border-color:rgba(255,255,255,.15)}
+.srv.add{background:transparent;border:1.5px dashed #33334a;color:var(--green);font-size:24px}
+.srv.add:hover{background:var(--green);color:#04150c;border-style:solid}
+.rail-sep{width:32px;height:1px;background:var(--line);flex:0 0 auto}
 
-        .btn-primary {
-            background: linear-gradient(45deg, #ff0000, #990000);
-            transition: all 0.3s;
-        }
+.channels{
+  width:252px;flex:0 0 252px;background:var(--panel);border-left:1px solid var(--line);
+  display:flex;flex-direction:column;overflow:hidden;
+}
+.srvHead{
+  padding:14px 14px;border-bottom:1px solid var(--line);display:flex;
+  align-items:center;justify-content:space-between;gap:8px;min-height:62px;
+  background:linear-gradient(180deg,#14141d,#101017);
+}
+.srvHead .name{font-weight:800;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.srvHead .sub{font-size:10px;color:var(--accent2);letter-spacing:1px;margin-top:2px}
+.icon-btn{
+  width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;
+  color:var(--muted);font-size:16px;transition:.2s;flex:0 0 auto;
+}
+.icon-btn:hover{background:#22222f;color:#fff}
+.catList{flex:1;overflow-y:auto;padding:10px 8px 4px}
+.cat{margin-bottom:14px}
+.catName{
+  font-size:11px;color:var(--muted);font-weight:700;letter-spacing:1px;
+  padding:0 8px 6px;display:flex;align-items:center;justify-content:space-between;
+}
+.catName button{font-size:14px;color:var(--muted);padding:0 4px;border-radius:6px}
+.catName button:hover{color:var(--green)}
+.chan{
+  padding:9px 10px;border-radius:9px;font-size:13.5px;color:#a9a9bd;cursor:pointer;
+  display:flex;align-items:center;gap:7px;transition:.15s;margin-bottom:2px;
+}
+.chan:hover{background:#1a1a25;color:#fff}
+.chan.active{background:linear-gradient(90deg,rgba(225,29,46,.22),rgba(225,29,46,.05));color:#fff;font-weight:600}
+.chan .lock{font-size:10px;opacity:.6}
+.addBtn{
+  width:calc(100% - 16px);margin:2px 8px 10px;padding:8px;border-radius:9px;font-size:12px;
+  color:var(--muted);border:1px dashed #2e2e42;transition:.2s;
+}
+.addBtn:hover{color:var(--green);border-color:var(--green)}
+.empty{font-size:12px;color:#55556b;padding:8px 10px}
 
-        .btn-primary:hover {
-            box-shadow: 0 0 15px rgba(255, 0, 0, 0.4);
-            transform: translateY(-2px);
-        }
+.userBar{
+  border-top:1px solid var(--line);padding:9px 10px;display:flex;align-items:center;
+  gap:9px;background:#0c0c13;
+}
+.userBar .info{flex:1;min-width:0}
+.userBar .uname{font-size:13px;font-weight:700;display:flex;align-items:center;gap:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.userBar .urole{font-size:10px;color:var(--muted)}
+.av{border-radius:50%;object-fit:cover;flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff}
+.avTxt{background:linear-gradient(140deg,#3a3a52,#22222f);text-transform:uppercase}
 
-        .chat-scroll::-webkit-scrollbar { width: 4px; }
-        .chat-scroll::-webkit-scrollbar-track { background: transparent; }
-        .chat-scroll::-webkit-scrollbar-thumb { background: #ff0000; border-radius: 10px; }
+.chat{flex:1;min-width:0;display:flex;flex-direction:column;background:#0c0c12}
+.chatHead{
+  height:62px;flex:0 0 62px;border-bottom:1px solid var(--line);display:flex;
+  align-items:center;gap:10px;padding:0 14px;background:#101017;
+}
+.chatHead .title{font-weight:800;font-size:15px;display:flex;align-items:center;gap:7px;flex:1;min-width:0}
+.chatHead .title span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chatHead .sub{font-size:11px;color:var(--muted);font-weight:400}
+.adminBtn{
+  background:linear-gradient(92deg,var(--accent),#8f0f1b);color:#fff;padding:8px 14px;
+  border-radius:10px;font-size:12.5px;font-weight:700;white-space:nowrap;
+  box-shadow:0 6px 18px rgba(225,29,46,.3);transition:.2s;
+}
+.adminBtn:hover{filter:brightness(1.15)}
+.messages{flex:1;overflow-y:auto;padding:18px 16px 8px;display:flex;flex-direction:column;gap:2px}
+.msg{display:flex;gap:10px;padding:6px 8px;border-radius:10px;transition:.15s}
+.msg:hover{background:rgba(255,255,255,.022)}
+.msg .body{min-width:0;flex:1}
+.msg .top{display:flex;align-items:center;gap:7px;margin-bottom:2px;flex-wrap:wrap}
+.msg .who{font-weight:800;font-size:13.5px}
+.msg .time{font-size:10px;color:#5c5c72}
+.msg .txt{font-size:14px;line-height:1.55;color:#d6d6e2;word-wrap:break-word;white-space:pre-wrap}
+.msg.sys .txt{color:var(--accent2);font-size:12.5px;font-style:italic}
+.msg.sys{background:rgba(225,29,46,.05);border-right:2px solid var(--accent)}
+.welcome{
+  margin:auto;text-align:center;color:var(--muted);padding:30px;
+}
+.welcome .big{font-size:30px;font-weight:900;color:#fff;margin-bottom:8px;
+  background:linear-gradient(92deg,#fff,var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.composer{padding:10px 14px 14px;display:flex;gap:8px;align-items:center}
+.composer input{
+  flex:1;padding:13px 16px;border-radius:14px;background:#15151e;border:1px solid var(--line);
+  color:var(--text);font-size:14px;transition:.2s;min-width:0;
+}
+.composer input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(225,29,46,.1)}
+.sendBtn{
+  width:44px;height:44px;flex:0 0 44px;border-radius:50%;
+  background:linear-gradient(140deg,var(--accent),#95101c);color:#fff;font-size:17px;
+  display:flex;align-items:center;justify-content:center;transition:.2s;
+  box-shadow:0 6px 18px rgba(225,29,46,.3);
+}
+.sendBtn:hover{transform:scale(1.07)}
 
-        .banned-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.98); z-index: 9999;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-        }
+.friends{
+  width:252px;flex:0 0 252px;background:var(--panel);border-right:1px solid var(--line);
+  display:flex;flex-direction:column;overflow:hidden;
+}
+.fHead{padding:16px 14px;font-weight:800;font-size:15px;border-bottom:1px solid var(--line);background:#101017}
+.fBody{flex:1;overflow-y:auto;padding:10px}
+.fSection{font-size:11px;color:var(--muted);font-weight:700;letter-spacing:1px;margin:14px 6px 6px}
+.fSection:first-child{margin-top:4px}
+.addFriend{display:flex;gap:6px;padding:0 4px 4px}
+.addFriend input{
+  flex:1;min-width:0;padding:9px 11px;border-radius:10px;background:#0b0b11;
+  border:1px solid var(--line);color:var(--text);font-size:12.5px;
+}
+.addFriend input:focus{border-color:var(--accent)}
+.addFriend button{
+  padding:9px 12px;border-radius:10px;background:var(--accent);color:#fff;font-size:12.5px;font-weight:700;
+}
+.fRow{
+  display:flex;align-items:center;gap:9px;padding:8px 9px;border-radius:11px;cursor:pointer;
+  transition:.15s;margin-bottom:2px;
+}
+.fRow:hover{background:#1a1a25}
+.fRow.active{background:linear-gradient(90deg,rgba(225,29,46,.22),rgba(225,29,46,.04))}
+.fName{flex:1;min-width:0;font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:flex;align-items:center;gap:5px}
+.mini{padding:5px 9px;border-radius:8px;font-size:11px;font-weight:700;transition:.2s}
+.mini.ok{background:rgba(37,194,110,.15);color:var(--green)}
+.mini.ok:hover{background:var(--green);color:#04150c}
+.mini.no{background:rgba(225,29,46,.15);color:var(--accent2)}
+.mini.no:hover{background:var(--accent);color:#fff}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex:0 0 auto}
 
-        .admin-tag { color: #ff0000; font-weight: bold; font-size: 10px; border: 1px solid #ff0000; padding: 1px 6px; border-radius: 4px; margin-right: 5px; background: rgba(255,0,0,0.1); }
-        .owner-tag { color: #fbbf24; font-weight: bold; font-size: 10px; border: 1px solid #fbbf24; padding: 1px 6px; border-radius: 4px; margin-right: 5px; background: rgba(251,191,36,0.1); }
-        .member-tag { color: #9ca3af; font-weight: bold; font-size: 10px; border: 1px solid #4b5563; padding: 1px 6px; border-radius: 4px; margin-right: 5px; }
+.overlay{
+  position:fixed;inset:0;background:rgba(3,3,6,.78);backdrop-filter:blur(5px);
+  display:flex;align-items:center;justify-content:center;z-index:900;padding:16px;
+  animation:fade .18s;
+}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.modal{
+  width:100%;max-width:440px;max-height:88dvh;overflow-y:auto;
+  background:linear-gradient(165deg,#15151f,#0e0e15);border:1px solid var(--line);
+  border-radius:20px;padding:22px;box-shadow:0 30px 90px rgba(0,0,0,.8);
+  animation:pop .28s cubic-bezier(.2,.9,.3,1.25);
+}
+.modal h3{font-size:17px;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.modal h3 .tag{font-size:10px;background:var(--accent);padding:3px 8px;border-radius:20px;font-weight:700}
+.modal .hint{font-size:11.5px;color:var(--muted);margin-top:-8px;margin-bottom:14px;line-height:1.6}
+.row{margin-bottom:12px}
+.row label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+.row input,.row select{
+  width:100%;padding:11px 13px;border-radius:11px;background:#0b0b11;
+  border:1px solid var(--line);color:var(--text);font-size:13.5px;
+}
+.row input:focus,.row select:focus{border-color:var(--accent)}
+.modal-actions{display:flex;gap:9px;margin-top:18px}
+.modal-actions button{flex:1;padding:12px;border-radius:11px;font-weight:700;font-size:13.5px;transition:.2s}
+.mOk{background:linear-gradient(92deg,var(--accent),#95101c);color:#fff}
+.mOk:hover{filter:brightness(1.15)}
+.mNo{background:#1b1b26;color:var(--muted);border:1px solid var(--line)}
+.mNo:hover{color:#fff}
+.chk{display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:10px;background:#0b0b11;border:1px solid var(--line);margin-bottom:8px;font-size:13px;cursor:pointer}
+.chk input{width:17px;height:17px;accent-color:var(--accent);cursor:pointer}
+.chk:hover{border-color:#33334a}
 
-        .channel-btn.active {
-            background: rgba(255, 0, 0, 0.1);
-            border-right: 4px solid #ff0000;
-            color: #fff;
-        }
-    </style>
+#toasts{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:2000;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none}
+.toast{
+  background:#1a1a26;border:1px solid var(--line);border-right:3px solid var(--accent);
+  padding:11px 18px;border-radius:12px;font-size:13px;box-shadow:0 12px 40px rgba(0,0,0,.6);
+  animation:pop .25s;max-width:90vw;
+}
+.toast.ok{border-right-color:var(--green)}
+
+.mobile-only{display:none!important}
+
+@media (max-width:920px){
+  .rail{width:64px;flex:0 0 64px;gap:8px}
+  .srv{width:44px;height:44px;border-radius:14px;font-size:14px}
+  .channels{
+    position:fixed;top:0;bottom:0;left:64px;width:min(262px,78vw);z-index:120;
+    transform:translateX(-115%);transition:transform .26s cubic-bezier(.3,.9,.3,1);
+    box-shadow:14px 0 50px rgba(0,0,0,.75);
+  }
+  .channels.open{transform:translateX(0)}
+  .friends{
+    position:fixed;top:0;bottom:0;right:0;width:min(272px,82vw);z-index:120;
+    transform:translateX(115%);transition:transform .26s cubic-bezier(.3,.9,.3,1);
+    box-shadow:-14px 0 50px rgba(0,0,0,.75);
+  }
+  .friends.open{transform:translateX(0)}
+  .mobile-only{display:flex!important}
+  .chatHead{padding:0 10px;gap:7px}
+  .chatHead .title{font-size:14px}
+  .adminBtn{padding:7px 10px;font-size:11.5px}
+  .messages{padding:12px 8px 6px}
+  .composer{padding:8px 10px 12px}
+}
+@media (max-width:400px){
+  .brand{font-size:33px}
+  .rail{width:58px;flex:0 0 58px}
+  .srv{width:40px;height:40px}
+  .channels{left:58px}
+}
+</style>
 </head>
-<body onclick="initAudioContext()">
+<body>
 
-    <!-- التنبيهات -->
-    <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 z-[100] hidden transition-all duration-300">
-        <div class="bg-red-600 text-white px-8 py-3 rounded-full shadow-2xl flex items-center gap-3">
-            <i class="fa-solid fa-circle-exclamation"></i>
-            <span id="toast-msg"></span>
+<!-- ============ LOADING ============ -->
+<div class="loading-screen" id="loadingScreen">
+  <div class="spinner"></div>
+  <p>جارٍ الاتصال بالخادم السحابي...</p>
+</div>
+
+<!-- ============ AUTH ============ -->
+<div class="auth-screen hidden" id="authScreen">
+  <div class="auth-card">
+    <div class="brand">iTeX</div>
+    <div class="brand-sub">COMMUNITY NETWORK</div>
+
+    <div class="field"><label>اسم المستخدم</label><input id="loginUser" placeholder="username" autocomplete="off"></div>
+    <div class="field"><label>كلمة المرور</label><input id="loginPass" type="password" placeholder="••••••••"></div>
+    <button class="btn-main" onclick="doLogin()">تسجيل الدخول</button>
+    <button class="btn-ghost" onclick="doRegister()">إنشاء حساب جديد</button>
+    <div class="auth-msg" id="authMsg"></div>
+  </div>
+</div>
+
+<!-- ============ APP ============ -->
+<div class="app hidden" id="appScreen">
+  <aside class="rail" id="rail"></aside>
+  <aside class="channels" id="channelsPanel"></aside>
+
+  <main class="chat">
+    <header class="chatHead">
+      <button class="icon-btn mobile-only" onclick="togglePanel('channels')">☰</button>
+      <div class="title" id="chatTitle"><span>iTeX</span></div>
+      <button class="icon-btn" id="collapseBtn" onclick="toggleCollapse()" title="إخفاء/إظهار الأقسام">⟨⟨</button>
+      <button class="adminBtn hidden" id="adminBtn" onclick="openAdminPanel()">لوحة التحكم</button>
+      <button class="icon-btn mobile-only" onclick="togglePanel('friends')">👥</button>
+    </header>
+    <div class="messages" id="messages"></div>
+    <div class="composer">
+      <input id="msgInput" placeholder="اكتب رسالة أو أمر (/tw ، /mute ، /ban)..." onkeydown="if(event.key==='Enter')sendMessage()">
+      <button class="sendBtn" onclick="sendMessage()">➤</button>
+    </div>
+  </main>
+
+  <aside class="friends" id="friendsPanel"></aside>
+</div>
+
+<div id="toasts"></div>
+
+<!-- ============ FIREBASE SDK (Compat) ============ -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics-compat.js"></script>
+
+<script>
+/* =====================================================================
+   Firebase Init
+   ===================================================================== */
+const firebaseConfig = {
+  apiKey: "AIzaSyDJdlo9mSdINt3A4KLvpBdxXjK28LdrWB0",
+  authDomain: "policerp-a71c8.firebaseapp.com",
+  projectId: "policerp-a71c8",
+  storageBucket: "policerp-a71c8.firebasestorage.app",
+  messagingSenderId: "569720054342",
+  appId: "1:569720054342:web:858b7f239f5c35929ca047",
+  measurementId: "G-TVEYLTLBBC",
+  databaseURL: "https://policerp-a71c8-default-rtdb.firebaseio.com"
+};
+
+firebase.initializeApp(firebaseConfig);
+try { firebase.analytics(); } catch(e) {}
+const db = firebase.database();
+
+/* =====================================================================
+   State & Config
+   ===================================================================== */
+const OWNER_USER = 'i7';
+const OWNER_PASS = 'i7227711';
+const ROOT = 'itex';
+
+const $  = s => document.querySelector(s);
+const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const now = () => Date.now();
+
+let DB = { users:{}, servers:{}, dms:{}, session:null };
+let ME = null;
+let state = { serverId:null, channelId:null, dmId:null, view:'server', readOnly:false, collapsed:false };
+
+/* =====================================================================
+   Firebase Realtime Sync
+   ===================================================================== */
+function fbRef(path){ return db.ref(ROOT + '/' + path); }
+
+function watchFirebase(){
+  // المستخدمون
+  fbRef('users').on('value', snap => {
+    DB.users = snap.val() || {};
+    if(ME) {
+      const fresh = DB.users[ME.id];
+      if(fresh) ME = fresh;
+      // إذا حُظر المستخدم الحالي — يخرج
+      if(ME && ME.banned){
+        toast('تم حظرك من الموقع');
+        setTimeout(() => logout(), 1200);
+        return;
+      }
+    }
+    renderAll();
+  });
+
+  // الخوادم
+  fbRef('servers').on('value', snap => {
+    DB.servers = snap.val() || {};
+    // ضمان وجود الخادم الأساسي وحق الأونر
+    ensureBaseServers();
+    renderAll();
+  });
+
+  // المحادثات الخاصة
+  fbRef('dms').on('value', snap => {
+    DB.dms = snap.val() || {};
+    renderAll();
+  });
+}
+
+function saveUsers(){ fbRef('users').set(DB.users); }
+function saveServers(){ fbRef('servers').set(DB.servers); }
+function saveDMs(){ fbRef('dms').set(DB.dms); }
+
+function saveAll(){ saveUsers(); saveServers(); saveDMs(); }
+
+/* =====================================================================
+   Base Servers (iTeX العام + خادم الأونر)
+   ===================================================================== */
+function ensureBaseServers(){
+  let changed = false;
+  if(!DB.users) DB.users = {};
+  if(!DB.servers) DB.servers = {};
+
+  // حساب الأونر
+  let owner = Object.values(DB.users).find(u => u.username === OWNER_USER);
+  if(!owner){
+    owner = {
+      id:'u_owner', username:OWNER_USER, password:OWNER_PASS, display:'i7', avatar:'',
+      isOwner:true, star:true, banned:false, mute:false, timeout:0,
+      friends:[], incoming:[], outgoing:[]
+    };
+    DB.users[owner.id] = owner;
+    changed = true;
+  } else {
+    owner.isOwner = true; owner.star = true; owner.banned = false;
+  }
+
+  // الخادم الأساسي
+  if(!DB.servers['s_main']){
+    DB.servers['s_main'] = {
+      id:'s_main', name:'iTeX العام', icon:'', ownerId:'u_owner',
+      isPrivate:false, members:['u_owner'], adminIds:[], blocked:[], roles:[],
+      categories:[
+        { id:'cat_a', name:'نظام الإدارة', channels:[
+          { id:'ch_law',   name:'القوانين',       adminOnly:false, roles:[], messages:[] },
+          { id:'ch_intro', name:'التعريف',        adminOnly:false, roles:[], messages:[] }
+        ]},
+        { id:'cat_b', name:'الدرجة العامة', channels:[
+          { id:'ch_gen', name:'الشات العام', adminOnly:false, roles:[], messages:[] }
+        ]},
+        { id:'cat_c', name:'خاص بالإدارة', channels:[
+          { id:'ch_ops', name:'غرفة العمليات', adminOnly:true, roles:[], messages:[] }
+        ]}
+      ]
+    };
+    changed = true;
+  }
+
+  // خادم الأونر الخاص
+  if(!DB.servers['s_owner']){
+    DB.servers['s_owner'] = {
+      id:'s_owner', name:'خادم الأونر', icon:'', ownerId:'u_owner',
+      isPrivate:true, members:['u_owner'], adminIds:[], blocked:[], roles:[],
+      categories:[
+        { id:'ocat_1', name:'التعليمات', channels:[
+          { id:'och_info', name:'تعليمات الأونر', adminOnly:false, roles:[], messages:[
+            { id:uid(), uid:'u_owner', text:'مرحبًا بك في خادم الأونر. هذا الخادم خاص ولا يراه إلا الأونر والإدارة.', ts:now(), sys:true }
+          ]}
+        ]},
+        { id:'ocat_2', name:'الأونر', channels:[
+          { id:'och_logs', name:'لوقات الموقع', adminOnly:false, roles:[], messages:[
+            { id:uid(), uid:'u_owner', text:'سجل العمليات يعمل الآن ✔', ts:now(), sys:true }
+          ]}
+        ]}
+      ]
+    };
+    changed = true;
+  }
+
+  if(changed) saveAll();
+}
+
+/* =====================================================================
+   Helpers
+   ===================================================================== */
+function userById(id){ return DB.users ? DB.users[id] : null; }
+function serverById(id){ return DB.servers ? DB.servers[id] : null; }
+function currentServer(){ return serverById(state.serverId); }
+function currentChannel(){
+  const s = currentServer(); if(!s || !s.categories) return null;
+  for(const c of s.categories) for(const ch of (c.channels||[])) if(ch.id === state.channelId) return ch;
+  return null;
+}
+function isServerAdmin(s, u){
+  if(!s || !u) return false;
+  if(u.isOwner) return true;
+  if(s.ownerId === u.id) return true;
+  if((s.adminIds||[]).includes(u.id)) return true;
+  return false;
+}
+function userRoles(s, u){
+  if(!s || !u) return [];
+  return (s.roles||[]).filter(r => (r.members||[]).includes(u.id)).map(r => r.id);
+}
+function canSeeChannel(s, ch, u){
+  if(!u) return false;
+  if(isServerAdmin(s, u)) return true;
+  if(ch.adminOnly) return false;
+  if(ch.roles && ch.roles.length){
+    const mine = userRoles(s, u);
+    return ch.roles.some(r => mine.includes(r));
+  }
+  return true;
+}
+function canSeeServer(s, u){
+  if(!u) return false;
+  if(u.isOwner) return true;
+  if((s.blocked||[]).includes(u.id)) return false;
+  if(s.isPrivate && !(s.members||[]).includes(u.id)) return false;
+  return true;
+}
+function avatarHTML(u, size = 34){
+  if(!u) return `<div class="av avTxt" style="width:${size}px;height:${size}px;font-size:${size*0.4}px">?</div>`;
+  if(u.avatar) return `<img class="av" style="width:${size}px;height:${size}px" src="${u.avatar}" alt="">`;
+  return `<div class="av avTxt" style="width:${size}px;height:${size}px;font-size:${size*0.4}px">${esc((u.display||u.username||'?').slice(0,2))}</div>`;
+}
+function fmtTime(ts){ return new Date(ts).toLocaleTimeString('ar-EG', { hour:'2-digit', minute:'2-digit' }); }
+function toast(msg, ok){
+  const t = document.createElement('div');
+  t.className = 'toast' + (ok ? ' ok' : '');
+  t.textContent = msg;
+  $('#toasts').appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; t.style.transition = '.3s'; setTimeout(() => t.remove(), 320); }, 2400);
+}
+function openModal(html){
+  const w = document.createElement('div');
+  w.className = 'overlay';
+  w.innerHTML = `<div class="modal">${html}</div>`;
+  w.addEventListener('mousedown', e => { if(e.target === w) w.remove(); });
+  document.body.appendChild(w);
+  return w;
+}
+function closeModal(){ const all = document.querySelectorAll('.overlay'); if(all.length) all[all.length-1].remove(); }
+function isMuted(u){ return u.mute || (u.timeout && u.timeout > now()); }
+
+/* =====================================================================
+   Auth
+   ===================================================================== */
+function doLogin(){
+  const un = $('#loginUser').value.trim();
+  const pw = $('#loginPass').value;
+  const msg = $('#authMsg');
+  if(!un || !pw){ msg.className = 'auth-msg'; msg.textContent = 'أدخل اسم المستخدم وكلمة المرور'; return; }
+  const u = Object.values(DB.users || {}).find(x => x.username.toLowerCase() === un.toLowerCase());
+  if(!u || u.password !== pw){ msg.className = 'auth-msg'; msg.textContent = 'بيانات الدخول غير صحيحة'; return; }
+  if(u.banned){ msg.className = 'auth-msg'; msg.textContent = 'هذا الحساب محظور من الموقع'; return; }
+  DB.session = u.id;
+  try { localStorage.setItem('itex_session', u.id); } catch(e){}
+  enterApp(u);
+}
+
+function doRegister(){
+  openModal(`
+    <h3>إنشاء حساب جديد</h3>
+    <div class="row"><label>اسم المستخدم (بالإنجليزي)</label><input id="regU" placeholder="username"></div>
+    <div class="row"><label>الاسم الظاهر</label><input id="regD" placeholder="الاسم الذي يظهر للآخرين"></div>
+    <div class="row"><label>كلمة المرور</label><input id="regP" type="password" placeholder="••••••••"></div>
+    <div class="modal-actions">
+      <button class="mOk" onclick="submitRegister()">إنشاء</button>
+      <button class="mNo" onclick="closeModal()">إلغاء</button>
+    </div>
+  `);
+}
+
+function submitRegister(){
+  const un = $('#regU').value.trim();
+  const dn = $('#regD').value.trim() || un;
+  const pw = $('#regP').value;
+  if(!/^[A-Za-z0-9_.]{3,16}$/.test(un)){ toast('اسم المستخدم: 3-16 حرف إنجليزي/رقم'); return; }
+  if(pw.length < 4){ toast('كلمة المرور قصيرة جدًا'); return; }
+  if(Object.values(DB.users||{}).some(u => u.username.toLowerCase() === un.toLowerCase())){ toast('اسم المستخدم مستخدم بالفعل'); return; }
+  const u = { id:uid(), username:un, password:pw, display:dn, avatar:'',
+              isOwner:false, star:false, banned:false, mute:false, timeout:0,
+              friends:[], incoming:[], outgoing:[] };
+  DB.users[u.id] = u;
+  saveUsers();
+  logAction(null, `تم إنشاء حساب جديد: ${u.username}`, null);
+  closeModal();
+  toast('تم إنشاء الحساب ✔ يمكنك الدخول الآن', true);
+}
+
+function logout(){
+  try { localStorage.removeItem('itex_session'); } catch(e){}
+  ME = null;
+  $('#appScreen').classList.add('hidden');
+  $('#authScreen').classList.remove('hidden');
+  $('#loginPass').value = '';
+}
+
+function enterApp(u){
+  ME = u;
+  $('#authScreen').classList.add('hidden');
+  $('#appScreen').classList.remove('hidden');
+  $('#adminBtn').classList.toggle('hidden', !ME.isOwner);
+
+  const vis = Object.values(DB.servers||{}).filter(s => canSeeServer(s, ME));
+  if(!vis.find(s => s.id === state.serverId)){
+    state.serverId = vis.length ? vis[0].id : null;
+    state.channelId = null;
+    state.view = 'server';
+  }
+  if(state.serverId) pickFirstChannel(state.serverId);
+  renderAll();
+}
+
+/* =====================================================================
+   Logging
+   ===================================================================== */
+function logAction(actor, text, target){
+  const line = `[${new Date().toLocaleString('ar-EG')}] ${actor ? '@'+actor.username : 'النظام'} — ${text}`;
+  const s = DB.servers['s_owner'];
+  if(!s || !s.categories) return;
+  const ch = s.categories.flatMap(c => c.channels).find(c => c.id === 'och_logs');
+  if(!ch) return;
+  if(!ch.messages) ch.messages = [];
+  ch.messages.push({ id:uid(), uid:'u_owner', text:line, ts:now(), sys:true });
+  if(ch.messages.length > 300) ch.messages.splice(0, ch.messages.length - 300);
+  saveServers();
+}
+
+/* =====================================================================
+   Render
+   ===================================================================== */
+function renderAll(){
+  if(!ME) return;
+  renderRail();
+  renderChannels();
+  renderChat();
+  renderFriends();
+  const a = $('#adminBtn'); if(a) a.classList.toggle('hidden', !ME.isOwner);
+}
+
+function renderRail(){
+  const rail = $('#rail');
+  rail.innerHTML = '';
+  const list = Object.values(DB.servers||{}).filter(s => canSeeServer(s, ME));
+  list.forEach(s => {
+    const b = document.createElement('button');
+    b.className = 'srv' + (state.view === 'server' && state.serverId === s.id ? ' active' : '');
+    b.title = s.name;
+    if(s.icon) b.innerHTML = `<img src="${s.icon}" alt="">`;
+    else b.textContent = (s.name || '?').replace(/\s/g,'').slice(0,2);
+    b.onclick = () => { openServer(s.id); closePanels(); };
+    rail.appendChild(b);
+  });
+
+  const sep = document.createElement('div'); sep.className = 'rail-sep'; rail.appendChild(sep);
+
+  const add = document.createElement('button');
+  add.className = 'srv add'; add.textContent = '+'; add.title = 'إنشاء خادم';
+  add.onclick = openCreateServer;
+  rail.appendChild(add);
+}
+
+function renderChannels(){
+  const p = $('#channelsPanel');
+  const s = currentServer();
+  if(!s){ p.innerHTML = ''; return; }
+  const admin = isServerAdmin(s, ME);
+  let h = `
+    <div class="srvHead">
+      <div style="min-width:0">
+        <div class="name">${esc(s.name)}</div>
+        <div class="sub">${admin ? 'ADMINISTRATOR' : 'MEMBER'}</div>
+      </div>
+      ${admin ? `<button class="icon-btn" onclick="openServerSettings()" title="إعدادات الخادم">⚙</button>` : ''}
+    </div>
+    <div class="catList">`;
+
+  (s.categories||[]).forEach(cat => {
+    const chans = (cat.channels||[]).filter(ch => canSeeChannel(s, ch, ME));
+    if(!chans.length && !admin) return;
+    h += `<div class="cat"><div class="catName"><span>${esc(cat.name)}</span>${
+      admin ? `<button onclick="addChannel('${cat.id}')" title="إضافة روم">+</button>` : ''
+    }</div>`;
+    chans.forEach(ch => {
+      const active = state.view === 'server' && state.channelId === ch.id;
+      h += `<div class="chan ${active ? 'active' : ''}" onclick="openChannel('${ch.id}')">
+              <span>#</span><span>${esc(ch.name)}</span>${ch.adminOnly ? '<span class="lock">🔒</span>' : ''}
+            </div>`;
+    });
+    if(!chans.length && admin) h += `<div class="empty">لا توجد رومات</div>`;
+    h += `</div>`;
+  });
+
+  if(admin) h += `<button class="addBtn" onclick="addCategory()">+ إضافة كاتجوري</button>`;
+  h += `</div>`;
+  h += userBarHTML();
+  p.innerHTML = h;
+}
+
+function userBarHTML(){
+  const role = ME.isOwner ? 'OWNER' : 'MEMBER';
+  return `
+    <div class="userBar">
+      ${avatarHTML(ME, 36)}
+      <div class="info">
+        <div class="uname">${esc(ME.display)} ${ME.star ? '⭐' : ''}</div>
+        <div class="urole">${role}</div>
+      </div>
+      <button class="icon-btn" onclick="openProfileEditor()" title="تعديل الحساب">✎</button>
+      <button class="icon-btn" onclick="logout()" title="خروج">⏻</button>
+    </div>`;
+}
+
+function renderChat(){
+  const box = $('#messages');
+  const title = $('#chatTitle');
+  const input = $('#msgInput');
+  box.innerHTML = '';
+
+  if(state.view === 'dm'){
+    const dm = DB.dms[state.dmId];
+    if(!dm){ box.innerHTML = `<div class="welcome"><div class="big">iTeX</div><div>اختر محادثة</div></div>`; title.innerHTML = '<span>الرسائل الخاصة</span>'; return; }
+    const otherId = (dm.users||[]).find(i => i !== ME.id);
+    const other = userById(otherId) || ME;
+    title.innerHTML = `<span>💬 ${esc(other.display)} ${other.star ? '⭐' : ''}</span>
+      <span class="sub">${state.readOnly ? 'عرض فقط (أونر)' : 'محادثة خاصة'}</span>`;
+    if(!(dm.messages||[]).length){
+      box.innerHTML = `<div class="welcome"><div class="big">بداية المحادثة</div><div>أرسل أول رسالة إلى ${esc(other.display)}</div></div>`;
+    } else {
+      dm.messages.forEach(m => box.appendChild(msgEl(m)));
+    }
+    input.disabled = !!state.readOnly;
+    input.placeholder = state.readOnly ? 'لا يمكنك الكتابة في محادثة الآخرين' : 'اكتب رسالة خاصة...';
+    box.scrollTop = box.scrollHeight;
+    return;
+  }
+
+  const s = currentServer();
+  const ch = currentChannel();
+  if(!s || !ch){
+    title.innerHTML = '<span>iTeX</span>';
+    box.innerHTML = `<div class="welcome"><div class="big">iTeX Community</div><div>اختر خادمًا ورومًا للبدء</div></div>`;
+    input.disabled = true; input.placeholder = '...';
+    return;
+  }
+  title.innerHTML = `<span># ${esc(ch.name)}</span><span class="sub">${esc(s.name)}</span>`;
+  input.disabled = false;
+  input.placeholder = 'اكتب رسالة أو أمر (/tw ، /mute ، /ban)...';
+
+  if(!(ch.messages||[]).length){
+    box.innerHTML = `<div class="welcome"><div class="big"># ${esc(ch.name)}</div><div>لا توجد رسائل بعد — كن أول من يكتب!</div></div>`;
+  } else {
+    ch.messages.forEach(m => box.appendChild(msgEl(m)));
+  }
+  box.scrollTop = box.scrollHeight;
+}
+
+function msgEl(m){
+  const u = userById(m.uid);
+  const d = document.createElement('div');
+  d.className = 'msg' + (m.sys ? ' sys' : '');
+  if(m.sys){
+    d.innerHTML = `<div class="body"><div class="txt">${esc(m.text)}</div></div>`;
+    return d;
+  }
+  d.innerHTML = `
+    ${avatarHTML(u, 38)}
+    <div class="body">
+      <div class="top">
+        <span class="who" style="color:${u && u.isOwner ? 'var(--accent2)' : '#fff'}">${esc(u ? u.display : 'مجهول')}</span>
+        ${u && u.star ? '<span title="موثّق">⭐</span>' : ''}
+        ${u && u.isOwner ? '<span style="font-size:9px;background:var(--accent);padding:2px 7px;border-radius:20px;font-weight:700">OWNER</span>' : ''}
+        <span class="time">${fmtTime(m.ts)}</span>
+      </div>
+      <div class="txt">${esc(m.text)}</div>
+    </div>`;
+  return d;
+}
+
+function renderFriends(){
+  const p = $('#friendsPanel');
+  let h = `<div class="fHead">الأشخاص</div><div class="fBody">`;
+
+  h += `<div class="addFriend">
+          <input id="friendInput" placeholder="اسم المستخدم..." onkeydown="if(event.key==='Enter')sendFriendRequest()">
+          <button onclick="sendFriendRequest()">إضافة</button>
+        </div>`;
+
+  const incoming = (ME.incoming || []).map(userById).filter(Boolean);
+  if(incoming.length){
+    h += `<div class="fSection">الطلبات الواردة</div>`;
+    incoming.forEach(u => {
+      h += `<div class="fRow">
+              ${avatarHTML(u, 30)}
+              <div class="fName">${esc(u.display)}</div>
+              <button class="mini ok" onclick="acceptRequest('${u.id}')">قبول</button>
+              <button class="mini no" onclick="rejectRequest('${u.id}')">رفض</button>
+            </div>`;
+    });
+  }
+
+  const outgoing = (ME.outgoing || []).map(userById).filter(Boolean);
+  if(outgoing.length){
+    h += `<div class="fSection">طلبات مرسلة</div>`;
+    outgoing.forEach(u => {
+      h += `<div class="fRow">${avatarHTML(u,30)}<div class="fName">${esc(u.display)}</div><span style="font-size:10px;color:var(--muted)">بانتظار القبول</span></div>`;
+    });
+  }
+
+  h += `<div class="fSection">الأصدقاء (${(ME.friends||[]).length})</div>`;
+  const friends = (ME.friends || []).map(userById).filter(Boolean);
+  if(!friends.length) h += `<div class="empty">لا يوجد أصدقاء بعد</div>`;
+  friends.forEach(u => {
+    const dm = findDM(ME.id, u.id);
+    const active = state.view === 'dm' && dm && state.dmId === dm.id;
+    h += `<div class="fRow ${active ? 'active' : ''}" onclick="openDMWith('${u.id}')">
+            ${avatarHTML(u, 30)}
+            <div class="fName">${esc(u.display)} ${u.star ? '⭐' : ''}</div>
+            <span class="dot"></span>
+          </div>`;
+  });
+
+  if(ME.isOwner){
+    h += `<div class="fSection">🛡️ كل الأعضاء (${Object.keys(DB.users).length})</div>`;
+    Object.values(DB.users).forEach(u => {
+      h += `<div class="fRow" onclick="openUserInfo('${u.id}')">
+              ${avatarHTML(u, 30)}
+              <div class="fName">${esc(u.display)} ${u.star ? '⭐' : ''}</div>
+              <span style="font-size:9px;color:var(--muted)">${u.isOwner ? 'OWNER' : (u.banned ? 'محظور' : (isMuted(u) ? 'مكتوم' : ''))}</span>
+            </div>`;
+    });
+
+    h += `<div class="fSection">👁️ كل المحادثات (${Object.keys(DB.dms).length})</div>`;
+    if(!Object.keys(DB.dms).length) h += `<div class="empty">لا توجد محادثات</div>`;
+    Object.values(DB.dms).forEach(d => {
+      const a = userById(d.users[0]), b = userById(d.users[1]);
+      if(!a || !b) return;
+      const active = state.view === 'dm' && state.dmId === d.id;
+      h += `<div class="fRow ${active ? 'active' : ''}" onclick="openDMOwner('${d.id}')">
+              ${avatarHTML(a, 26)}${avatarHTML(b, 26)}
+              <div class="fName" style="font-size:12px">${esc(a.display)} ↔ ${esc(b.display)}</div>
+            </div>`;
+    });
+  }
+
+  h += `</div>`;
+  p.innerHTML = h;
+}
+
+/* =====================================================================
+   Navigation
+   ===================================================================== */
+function pickFirstChannel(sid){
+  const s = serverById(sid); if(!s || !s.categories) return;
+  for(const c of s.categories){
+    const ch = (c.channels||[]).find(x => canSeeChannel(s, x, ME));
+    if(ch){ state.channelId = ch.id; return; }
+  }
+  state.channelId = null;
+}
+function openServer(id){
+  state.view = 'server'; state.dmId = null; state.readOnly = false;
+  state.serverId = id;
+  pickFirstChannel(id);
+  renderAll();
+}
+function openChannel(id){
+  state.view = 'server'; state.dmId = null; state.readOnly = false;
+  state.channelId = id;
+  renderAll(); closePanels();
+}
+function findDM(a, b){
+  return Object.values(DB.dms||{}).find(d => d.users.includes(a) && d.users.includes(b));
+}
+function openDMWith(userId){
+  let dm = findDM(ME.id, userId);
+  if(!dm){
+    dm = { id:uid(), users:[ME.id, userId], messages:[] };
+    DB.dms[dm.id] = dm; saveDMs();
+  }
+  state.view = 'dm'; state.dmId = dm.id; state.readOnly = false;
+  renderAll(); closePanels();
+}
+function openDMOwner(dmId){
+  state.view = 'dm'; state.dmId = dmId;
+  const dm = DB.dms[dmId];
+  state.readOnly = !(dm && dm.users.includes(ME.id));
+  renderAll(); closePanels();
+}
+function openUserInfo(userId){
+  const u = userById(userId); if(!u) return;
+  openModal(`
+    <h3>معلومات العضو ${u.star ? '⭐' : ''}</h3>
+    <div style="display:flex;gap:14px;align-items:center;margin-bottom:16px">
+      ${avatarHTML(u, 60)}
+      <div>
+        <div style="font-weight:800;font-size:17px">${esc(u.display)}</div>
+        <div style="color:var(--muted);font-size:12px">@${esc(u.username)}</div>
+        <div style="font-size:11px;margin-top:5px;color:var(--accent2)">
+          ${u.isOwner ? 'OWNER' : ''}${u.banned ? ' • محظور' : ''}${isMuted(u) ? ' • مكتوم' : ''}
         </div>
+      </div>
+    </div>
+    <div class="modal-actions"><button class="mNo" onclick="closeModal()">إغلاق</button></div>
+  `);
+}
+
+function togglePanel(which){
+  const el = which === 'channels' ? $('#channelsPanel') : $('#friendsPanel');
+  const other = which === 'channels' ? $('#friendsPanel') : $('#channelsPanel');
+  other.classList.remove('open');
+  el.classList.toggle('open');
+}
+function closePanels(){
+  $('#channelsPanel').classList.remove('open');
+  $('#friendsPanel').classList.remove('open');
+}
+function toggleCollapse(){
+  state.collapsed = !state.collapsed;
+  const cp = $('#channelsPanel'), fp = $('#friendsPanel');
+  if(state.collapsed){
+    cp.style.display = 'none'; fp.style.display = 'none';
+    $('#collapseBtn').textContent = '⟩⟩';
+  } else {
+    cp.style.display = ''; fp.style.display = '';
+    $('#collapseBtn').textContent = '⟨⟨';
+  }
+}
+
+/* =====================================================================
+   Messaging
+   ===================================================================== */
+function sendMessage(){
+  const input = $('#msgInput');
+  const text = input.value.trim();
+  if(!text) return;
+  if(ME.banned){ toast('أنت محظور من الموقع'); return; }
+  if(ME.timeout && ME.timeout > now()){
+    const m = Math.ceil((ME.timeout - now()) / 60000);
+    toast(`أنت في تايم أوت — متبقٍ ${m} دقيقة`); return;
+  }
+  if(ME.mute){ toast('أنت مكتوم ولا تستطيع الكتابة'); return; }
+
+  if(text.startsWith('/')){
+    if(handleCommand(text)){ input.value = ''; return; }
+  }
+
+  if(state.view === 'dm'){
+    const dm = DB.dms[state.dmId];
+    if(!dm || state.readOnly) return;
+    if(!dm.messages) dm.messages = [];
+    dm.messages.push({ id:uid(), uid:ME.id, text, ts:now() });
+    if(dm.messages.length > 500) dm.messages.splice(0, dm.messages.length - 500);
+    saveDMs();
+  } else {
+    const ch = currentChannel();
+    if(!ch) return;
+    if(!ch.messages) ch.messages = [];
+    ch.messages.push({ id:uid(), uid:ME.id, text, ts:now() });
+    if(ch.messages.length > 500) ch.messages.splice(0, ch.messages.length - 500);
+    saveServers();
+  }
+  input.value = '';
+  renderChat();
+}
+
+function handleCommand(text){
+  const parts = text.slice(1).split(/\s+/);
+  const cmd = parts[0].toLowerCase();
+  const s = currentServer();
+  const isAdmin = s && isServerAdmin(s, ME);
+  if(!['ban','mute','tw','timeout','unban','unmute'].includes(cmd)) return false;
+  if(!isAdmin){ toast('هذا الأمر للإدارة فقط'); return true; }
+
+  const targetName = parts[1];
+  const target = Object.values(DB.users).find(u => u.username.toLowerCase() === (targetName||'').toLowerCase());
+  if(!target){ toast('لم يتم العثور على العضو'); return true; }
+  if(target.isOwner){ toast('لا يمكن تنفيذ الأمر على الأونر'); return true; }
+
+  if(cmd === 'ban'){ target.banned = true; logAction(ME, `حظر العضو @${target.username}`, target); toast('تم حظر العضو', true); }
+  if(cmd === 'unban'){ target.banned = false; logAction(ME, `فك الحظر عن @${target.username}`, target); toast('تم فك الحظر', true); }
+  if(cmd === 'mute'){ target.mute = true; logAction(ME, `كتم العضو @${target.username}`, target); toast('تم الكتم', true); }
+  if(cmd === 'unmute'){ target.mute = false; logAction(ME, `فك الكتم عن @${target.username}`, target); toast('تم فك الكتم', true); }
+  if(cmd === 'tw' || cmd === 'timeout'){
+    const mins = parseInt(parts[2]) || 10;
+    target.timeout = now() + mins * 60000;
+    logAction(ME, `تايم أوت ${mins} دقيقة للعضو @${target.username}`, target);
+    toast(`تم إعطاء تايم أوت ${mins} دقيقة`, true);
+  }
+  saveUsers();
+  renderAll();
+  return true;
+}
+
+/* =====================================================================
+   Friends
+   ===================================================================== */
+function sendFriendRequest(){
+  const inp = $('#friendInput'); if(!inp) return;
+  const name = inp.value.trim();
+  if(!name) return;
+  const u = Object.values(DB.users).find(x => x.username.toLowerCase() === name.toLowerCase());
+  if(!u){ toast('لا يوجد عضو بهذا الاسم'); return; }
+  if(u.id === ME.id){ toast('لا يمكنك إضافة نفسك'); return; }
+  if((ME.friends||[]).includes(u.id)){ toast('هذا العضو صديقك بالفعل'); return; }
+  if((ME.outgoing||[]).includes(u.id)){ toast('الطلب مرسل مسبقًا'); return; }
+  ME.outgoing = ME.outgoing || []; u.incoming = u.incoming || [];
+  ME.outgoing.push(u.id);
+  u.incoming.push(ME.id);
+  DB.users[ME.id] = ME; DB.users[u.id] = u;
+  logAction(ME, `أرسل طلب صداقة إلى @${u.username}`, u);
+  saveUsers(); inp.value = ''; renderFriends();
+  toast('تم إرسال طلب الصداقة ✔', true);
+}
+function acceptRequest(userId){
+  const u = userById(userId); if(!u) return;
+  ME.incoming = (ME.incoming||[]).filter(i => i !== userId);
+  u.outgoing = (u.outgoing||[]).filter(i => i !== ME.id);
+  ME.friends = ME.friends || []; u.friends = u.friends || [];
+  if(!ME.friends.includes(userId)) ME.friends.push(userId);
+  if(!u.friends.includes(ME.id)) u.friends.push(ME.id);
+  if(!findDM(ME.id, userId)){
+    const dm = { id:uid(), users:[ME.id, userId], messages:[] };
+    DB.dms[dm.id] = dm;
+  }
+  DB.users[ME.id] = ME; DB.users[u.id] = u;
+  logAction(ME, `قبل طلب الصداقة من @${u.username}`, u);
+  saveAll(); renderAll();
+  toast('تمت الإضافة ✔ يمكنكما التحدث الآن', true);
+}
+function rejectRequest(userId){
+  const u = userById(userId); if(!u) return;
+  ME.incoming = (ME.incoming||[]).filter(i => i !== userId);
+  u.outgoing = (u.outgoing||[]).filter(i => i !== ME.id);
+  DB.users[ME.id] = ME; DB.users[u.id] = u;
+  saveUsers(); renderFriends();
+  toast('تم رفض الطلب');
+}
+
+/* =====================================================================
+   Server creation
+   ===================================================================== */
+function openCreateServer(){
+  openModal(`
+    <h3>إنشاء خادم جديد <span class="tag">+</span></h3>
+    <div class="hint">اختر اسمًا وصورة للخادم. ستحصل على كامل الصلاحيات داخل خادمك.</div>
+    <div class="row"><label>اسم الخادم</label><input id="newSrvName" placeholder="مثال: خادم الأصدقاء"></div>
+    <div class="row"><label>صورة الخادم (من الألبوم)</label><input id="newSrvIcon" type="file" accept="image/*"></div>
+    <div class="modal-actions">
+      <button class="mOk" onclick="createServer()">إنشاء الخادم</button>
+      <button class="mNo" onclick="closeModal()">إلغاء</button>
+    </div>
+  `);
+}
+
+function createServer(){
+  const name = $('#newSrvName').value.trim();
+  const file = $('#newSrvIcon').files[0];
+  if(!name){ toast('اكتب اسم الخادم'); return; }
+
+  const finish = icon => {
+    const id = uid();
+    const s = {
+      id, name, icon: icon || '', ownerId: ME.id,
+      isPrivate:false, members:[ME.id], adminIds:[], blocked:[], roles:[],
+      categories:[
+        { id:uid(), name:'الدرجة العامة', channels:[
+          { id:uid(), name:'الشات العام', adminOnly:false, roles:[], messages:[] }
+        ]}
+      ]
+    };
+    DB.servers[id] = s;
+    logAction(ME, `أنشأ خادمًا جديدًا: ${name}`, null);
+    saveServers(); closeModal();
+    state.view = 'server'; state.serverId = id; state.channelId = s.categories[0].channels[0].id;
+    renderAll();
+    toast('تم إنشاء الخادم ✔', true);
+  };
+
+  if(file){
+    const r = new FileReader();
+    r.onload = e => finish(e.target.result);
+    r.readAsDataURL(file);
+  } else finish('');
+}
+
+/* =====================================================================
+   Server settings
+   ===================================================================== */
+function openServerSettings(){
+  const s = currentServer(); if(!s) return;
+  const admin = isServerAdmin(s, ME);
+  if(!admin) return;
+
+  openModal(`
+    <h3>إعدادات الخادم <span class="tag">${esc(s.name)}</span></h3>
+    <div class="row"><label>اسم الخادم</label><input id="ssName" value="${esc(s.name)}"></div>
+    <div class="row"><label>صورة الخادم</label><input id="ssIcon" type="file" accept="image/*"></div>
+
+    <label class="chk"><input type="checkbox" id="ssPrivate" ${s.isPrivate?'checked':''}> خادم خاص (لا يراه إلا الأعضاء المضافون)</label>
+
+    <div class="row" style="margin-top:14px">
+      <label>إضافة عضو للخادم (يوزر)</label>
+      <input id="ssMember" placeholder="username">
+    </div>
+    <div class="row">
+      <label>حجب الخادم عن عضو — Admin Straight (يوزر)</label>
+      <input id="ssBlock" placeholder="username">
     </div>
 
-    <!-- شاشة الباند -->
-    <div id="banned-screen" class="banned-overlay hidden">
-        <div class="w-24 h-24 bg-red-600 rounded-full flex items-center justify-center animate-pulse mb-8">
-            <i class="fa-solid fa-ban text-white text-4xl"></i>
-        </div>
-        <h1 class="text-4xl font-black mb-4">أنت ممنوع من الدخول</h1>
-        <p class="text-zinc-400 mb-8 max-w-sm text-center" id="ban-reason">تم حظرك من قبل الإدارة لمخالفة قوانين MysteryLife</p>
-        <div class="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl text-center min-w-[250px]">
-            <p class="text-xs text-zinc-500 uppercase tracking-widest mb-2">الوقت المتبقي</p>
-            <p id="ban-timer" class="text-3xl font-mono font-bold text-red-500">00:00:00</p>
-        </div>
+    <div class="modal-actions">
+      <button class="mOk" onclick="saveServerSettings()">حفظ التغييرات</button>
+      <button class="mNo" onclick="closeModal()">إغلاق</button>
+    </div>
+  `);
+}
+
+function saveServerSettings(){
+  const s = currentServer(); if(!s) return;
+  const name = $('#ssName').value.trim();
+  if(name) s.name = name;
+  s.isPrivate = $('#ssPrivate').checked;
+
+  const memName = $('#ssMember').value.trim();
+  if(memName){
+    const u = Object.values(DB.users).find(x => x.username.toLowerCase() === memName.toLowerCase());
+    if(u && !(s.members||[]).includes(u.id)){
+      s.members = s.members || []; s.members.push(u.id);
+      logAction(ME, `أضاف @${u.username} إلى خادم ${s.name}`, u);
+      toast('تمت إضافة العضو ✔', true);
+    } else if(!u) toast('العضو غير موجود');
+  }
+  const blockName = $('#ssBlock').value.trim();
+  if(blockName){
+    const u = Object.values(DB.users).find(x => x.username.toLowerCase() === blockName.toLowerCase());
+    if(u && !u.isOwner){
+      s.blocked = s.blocked || [];
+      if(!s.blocked.includes(u.id)) s.blocked.push(u.id);
+      logAction(ME, `حجب خادم ${s.name} عن @${u.username}`, u);
+      toast('تم حجب الخادم عن العضو ✔', true);
+    } else if(u && u.isOwner) toast('لا يمكن حجب الأونر');
+    else toast('العضو غير موجود');
+  }
+
+  const file = $('#ssIcon').files[0];
+  if(file){
+    const r = new FileReader();
+    r.onload = e => { s.icon = e.target.result; DB.servers[s.id] = s; saveServers(); closeModal(); renderAll(); };
+    r.readAsDataURL(file);
+  } else { DB.servers[s.id] = s; saveServers(); closeModal(); renderAll(); }
+}
+
+function addCategory(){
+  const s = currentServer(); if(!s || !isServerAdmin(s, ME)) return;
+  openModal(`
+    <h3>إضافة كاتجوري</h3>
+    <div class="row"><label>اسم الكاتجوري</label><input id="newCatName" placeholder="مثال: رومات عامة"></div>
+    <div class="modal-actions">
+      <button class="mOk" onclick="createCategory()">إضافة</button>
+      <button class="mNo" onclick="closeModal()">إلغاء</button>
+    </div>
+  `);
+}
+function createCategory(){
+  const s = currentServer();
+  const name = $('#newCatName').value.trim();
+  if(!name){ toast('اكتب اسم الكاتجوري'); return; }
+  s.categories.push({ id:uid(), name, channels:[] });
+  logAction(ME, `أنشأ كاتجوري "${name}" في خادم ${s.name}`, null);
+  DB.servers[s.id] = s; saveServers(); closeModal(); renderAll();
+  toast('تمت إضافة الكاتجوري ✔', true);
+}
+
+function addChannel(catId){
+  const s = currentServer(); if(!s || !isServerAdmin(s, ME)) return;
+  const roles = s.roles || [];
+  openModal(`
+    <h3>إضافة روم جديد</h3>
+    <div class="row"><label>اسم الروم</label><input id="newChName" placeholder="مثال: الشات العام"></div>
+    <label class="chk"><input type="checkbox" id="newChAdmin"> روم للإدارة فقط 🔒</label>
+    <div class="row" style="margin-top:12px">
+      <label>الصلاحيات — من يمكنه رؤية الروم؟ (اتركه فارغًا للجميع)</label>
+      ${roles.length ? roles.map(r => `
+        <label class="chk"><input type="checkbox" class="roleChk" value="${r.id}"> ${esc(r.name)}</label>
+      `).join('') : '<div class="empty">لا توجد رتب — أنشئ رتبًا من إعدادات الخادم</div>'}
+    </div>
+    <div class="modal-actions">
+      <button class="mOk" onclick="createChannel('${catId}')">إضافة</button>
+      <button class="mNo" onclick="closeModal()">إلغاء</button>
+    </div>
+  `);
+}
+function createChannel(catId){
+  const s = currentServer();
+  const cat = s.categories.find(c => c.id === catId); if(!cat) return;
+  const name = $('#newChName').value.trim();
+  if(!name){ toast('اكتب اسم الروم'); return; }
+  const adminOnly = $('#newChAdmin').checked;
+  const roles = [...document.querySelectorAll('.roleChk:checked')].map(i => i.value);
+  const ch = { id:uid(), name, adminOnly, roles, messages:[] };
+  cat.channels.push(ch);
+  logAction(ME, `أنشأ روم "${name}" في خادم ${s.name}`, null);
+  DB.servers[s.id] = s; saveServers(); closeModal();
+  state.view = 'server'; state.channelId = ch.id;
+  renderAll();
+  toast('تم إنشاء الروم ✔', true);
+}
+
+/* =====================================================================
+   Profile
+   ===================================================================== */
+function openProfileEditor(){
+  openModal(`
+    <h3>تعديل الحساب</h3>
+    <div class="hint">اختر ما تريد تغييره ثم اضغط Done.</div>
+    <div class="row"><label>الاسم الظاهر</label><input id="pfDisplay" value="${esc(ME.display)}"></div>
+    <div class="row"><label>اسم المستخدم</label><input id="pfUser" value="${esc(ME.username)}"></div>
+    <div class="row"><label>كلمة المرور الجديدة (اتركها فارغة لعدم التغيير)</label><input id="pfPass" type="password" placeholder="••••••••"></div>
+    <div class="row"><label>الصورة الشخصية (من الألبوم)</label><input id="pfAvatar" type="file" accept="image/*"></div>
+    <div class="modal-actions">
+      <button class="mOk" onclick="saveProfile()">Done ✓</button>
+      <button class="mNo" onclick="closeModal()">إلغاء</button>
+    </div>
+  `);
+}
+function saveProfile(){
+  const d = $('#pfDisplay').value.trim();
+  const un = $('#pfUser').value.trim();
+  const pw = $('#pfPass').value;
+  const file = $('#pfAvatar').files[0];
+
+  if(d) ME.display = d;
+  if(un && un.toLowerCase() !== ME.username.toLowerCase()){
+    if(!/^[A-Za-z0-9_.]{3,16}$/.test(un)){ toast('اسم المستخدم غير صالح'); return; }
+    if(Object.values(DB.users).some(u => u.id !== ME.id && u.username.toLowerCase() === un.toLowerCase())){ toast('الاسم مستخدم بالفعل'); return; }
+    ME.username = un;
+  }
+  if(pw){
+    if(pw.length < 4){ toast('كلمة المرور قصيرة'); return; }
+    ME.password = pw;
+  }
+  const finish = () => { DB.users[ME.id] = ME; saveUsers(); closeModal(); renderAll(); toast('تم تحديث الحساب ✔', true); };
+  if(file){
+    const r = new FileReader();
+    r.onload = e => { ME.avatar = e.target.result; finish(); };
+    r.readAsDataURL(file);
+  } else finish();
+}
+
+/* =====================================================================
+   Owner Admin Panel
+   ===================================================================== */
+function openAdminPanel(){
+  if(!ME.isOwner) return;
+  openModal(`
+    <h3>لوحة تحكم الأونر <span class="tag">OWNER</span></h3>
+    <div class="hint">تحكم كامل بالموقع: الحظر، الكتم، التايم أوت، حذف الخوادم، والتوثيق ⭐</div>
+
+    <div class="row"><label>اسم المستخدم للعضو المستهدف</label><input id="adUser" placeholder="username"></div>
+
+    <div class="row">
+      <label>الإجراء</label>
+      <select id="adAction">
+        <option value="ban">حظر من الموقع (Ban)</option>
+        <option value="unban">فك الحظر (Unban)</option>
+        <option value="timeout">تايم أوت (Timeout)</option>
+        <option value="mute">كتم (Mute)</option>
+        <option value="unmute">فك الكتم (Unmute)</option>
+        <option value="verify">توثيق ⭐</option>
+        <option value="unverify">إزالة التوثيق</option>
+        <option value="delserver">حذف خادم يملكه العضو</option>
+      </select>
     </div>
 
-    <!-- واجهة تسجيل الدخول -->
-    <div id="auth-screen" class="min-h-screen flex items-center justify-center p-4">
-        <div class="w-full max-w-md ml-glass p-10 rounded-[2.5rem] shadow-2xl text-center border-t border-zinc-800">
-            <div class="mb-10">
-                <div class="w-20 h-20 bg-red-600 rounded-3xl mx-auto flex items-center justify-center rotate-12 mb-8 shadow-[0_0_30px_rgba(255,0,0,0.3)]">
-                    <i class="fa-solid fa-ghost text-white text-4xl -rotate-12"></i>
-                </div>
-                <h1 class="text-3xl font-black text-white mb-3 italic">MYSTERYLIFE RP</h1>
-                <p class="text-zinc-500 text-sm leading-relaxed">الموقع الرسمي لسيرفر MysteryLife المخصص للدردشة. سجل دخولك لتغوص في السواليف يا وحش.</p>
-            </div>
+    <div class="row"><label>المدة بالدقائق (للتايم أوت فقط)</label><input id="adMins" type="number" value="10" min="1"></div>
 
-            <div class="space-y-5">
-                <div class="text-right">
-                    <label class="text-[10px] text-zinc-600 font-bold mr-3 uppercase">اليوزر :</label>
-                    <input type="text" id="login-user" placeholder="اليوزر الخاص بك" class="w-full bg-zinc-950 border border-zinc-900 p-4 rounded-2xl outline-none focus:border-red-600 transition-all text-white font-bold">
-                </div>
-                <div class="text-right">
-                    <label class="text-[10px] text-zinc-600 font-bold mr-3 uppercase">الباسورد :</label>
-                    <input type="password" id="login-pass" placeholder="••••••••" class="w-full bg-zinc-950 border border-zinc-900 p-4 rounded-2xl outline-none focus:border-red-600 transition-all text-white">
-                </div>
-                <button onclick="handleLogin()" class="w-full btn-primary py-4 rounded-2xl font-black text-white shadow-xl uppercase tracking-widest">تسجيل الدخول</button>
-                <div class="flex items-center justify-center gap-4 mt-6">
-                    <span class="h-px bg-zinc-900 flex-1"></span>
-                    <button onclick="toggleAuth(false)" id="auth-toggle-btn" class="text-zinc-500 text-[10px] font-bold hover:text-red-500 transition-colors">إنشاء حساب جديد</button>
-                    <span class="h-px bg-zinc-900 flex-1"></span>
-                </div>
-            </div>
-            
-            <p class="mt-12 text-[9px] text-zinc-700 font-bold uppercase tracking-[0.3em]">MysteryLife Rp © 2026</p>
-        </div>
+    <div class="row" id="adSrvRow" style="display:none">
+      <label>اسم الخادم المراد حذفه</label><input id="adSrvName" placeholder="اسم الخادم">
     </div>
 
-    <!-- واجهة إنشاء الملف الشخصي -->
-    <div id="profile-setup" class="min-h-screen hidden flex items-center justify-center p-4">
-        <div class="w-full max-w-md ml-glass p-10 rounded-[2.5rem] text-center">
-            <h2 class="text-2xl font-black mb-8">إعداد الحساب</h2>
-            
-            <div class="relative w-32 h-32 md:w-40 md:h-40 mx-auto mb-8 group cursor-pointer" onclick="document.getElementById('avatar-input').click()">
-                <img id="avatar-preview" src="https://ui-avatars.com/api/?name=User&background=111&color=ff0000" class="w-full h-full rounded-full object-cover border-4 border-red-600 p-1 bg-black">
-                <div class="absolute inset-0 bg-black/70 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
-                    <i class="fa-solid fa-camera text-2xl"></i>
-                </div>
-                <input type="file" id="avatar-input" class="hidden" accept="image/*" onchange="previewAvatar(this, 'avatar-preview')">
-            </div>
-            <p class="text-[10px] text-zinc-500 font-bold mb-8 uppercase tracking-widest">اضغط لاختيار صورتك الشخصية</p>
-
-            <div class="text-right mb-8">
-                <label class="text-[10px] text-zinc-600 font-bold mr-3 uppercase">الاسم المستعار :</label>
-                <input type="text" id="setup-nickname" placeholder="الاسم اللي يطلع للناس..." class="w-full bg-zinc-950 border border-zinc-900 p-4 rounded-2xl outline-none focus:border-red-600 text-white text-center font-bold">
-            </div>
-
-            <button onclick="completeSetup()" class="w-full btn-primary py-4 rounded-2xl font-black text-white shadow-xl">بدء الدردشة</button>
-        </div>
+    <div class="modal-actions">
+      <button class="mOk" onclick="applyAdminAction()">تنفيذ</button>
+      <button class="mNo" onclick="closeModal()">إغلاق</button>
     </div>
-
-    <!-- واجهة الشات الرئيسية -->
-    <div id="main-app" class="h-screen hidden flex overflow-hidden">
-        
-        <!-- القائمة الجانبية -->
-        <div class="w-72 bg-zinc-950 border-l border-zinc-900 flex flex-col hidden md:flex absolute md:relative z-40 h-full" id="sidebar">
-            <div class="p-8 flex justify-between items-center">
-                <div>
-                    <h1 class="text-2xl font-black text-red-600 tracking-tighter italic">MYSTERYLIFE</h1>
-                    <p class="text-[9px] text-zinc-600 font-bold mt-1">COMMUNITY NETWORK</p>
-                </div>
-                <button onclick="toggleSidebar()" class="md:hidden text-zinc-500 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
-            </div>
-
-            <div class="flex-1 overflow-y-auto px-4 space-y-1 chat-scroll">
-                <p class="text-[10px] text-zinc-700 font-black px-4 uppercase mb-3 mt-4">نظام الإدارة</p>
-                <button onclick="switchChannel('rules')" id="btn-rules" class="channel-btn w-full flex items-center gap-3 p-4 rounded-2xl text-zinc-400 hover:text-white transition-all active">
-                    <i class="fa-solid fa-shield-halved w-5"></i>
-                    <span class="text-sm font-bold">القوانين</span>
-                </button>
-                <button onclick="switchChannel('info')" id="btn-info" class="channel-btn w-full flex items-center gap-3 p-4 rounded-2xl text-zinc-400 hover:text-white transition-all">
-                    <i class="fa-solid fa-id-badge w-5"></i>
-                    <span class="text-sm font-bold">التعريف</span>
-                </button>
-
-                <p class="text-[10px] text-zinc-700 font-black px-4 uppercase mb-3 mt-8">الدردشة العامة</p>
-                <button onclick="switchChannel('general')" id="btn-general" class="channel-btn w-full flex items-center gap-3 p-4 rounded-2xl text-zinc-400 hover:text-white transition-all">
-                    <i class="fa-solid fa-comments w-5"></i>
-                    <span class="text-sm font-bold">الشات العام</span>
-                </button>
-
-                <div id="admin-channel-container" class="hidden">
-                    <p class="text-[10px] text-zinc-700 font-black px-4 uppercase mb-3 mt-8">خاص بالإدارة</p>
-                    <button onclick="switchChannel('staff')" id="btn-staff" class="channel-btn w-full flex items-center gap-3 p-4 rounded-2xl text-zinc-400 hover:text-white transition-all">
-                        <i class="fa-solid fa-user-lock w-5 text-yellow-500"></i>
-                        <span class="text-sm font-bold">غرفة العمليات</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- معلومات المستخدم -->
-            <div class="p-6 bg-zinc-900/50 flex items-center justify-between border-t border-zinc-900">
-                <div class="flex items-center gap-3">
-                    <img id="my-avatar" src="" class="w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-red-600 bg-black object-cover">
-                    <div class="w-24 md:w-28">
-                        <p id="my-nickname" class="text-xs font-black truncate flex items-center gap-1">---</p>
-                        <p id="my-rank-text" class="text-[9px] text-zinc-500 uppercase font-bold">Member</p>
-                    </div>
-                </div>
-                <button onclick="openSettings()" class="p-2 text-zinc-600 hover:text-red-500 transition-all">
-                    <i class="fa-solid fa-sliders text-sm"></i>
-                </button>
-            </div>
-        </div>
-
-        <!-- الشات -->
-        <div class="flex-1 flex flex-col bg-black relative">
-            <div class="h-20 border-b border-zinc-900 flex justify-between items-center px-4 md:px-8 bg-zinc-950/50">
-                <div class="flex items-center gap-3">
-                    <button onclick="toggleSidebar()" class="md:hidden text-zinc-400 hover:text-white"><i class="fa-solid fa-bars text-xl"></i></button>
-                    <div class="w-2 h-2 rounded-full bg-red-600 animate-pulse ml-2 md:ml-0"></div>
-                    <h2 id="channel-title" class="font-black text-sm uppercase tracking-widest">الشات العام</h2>
-                </div>
-                <div id="admin-actions" class="hidden items-center gap-4">
-                    <button onclick="toggleModal('admin-panel')" class="text-[9px] font-black bg-red-600 text-white px-4 py-2 rounded-full hover:bg-red-700 transition-all shadow-lg shadow-red-600/20">لوحة التحكم</button>
-                </div>
-            </div>
-
-            <div id="chat-box" class="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 chat-scroll">
-                <!-- الرسائل -->
-            </div>
-
-            <!-- الكتابة -->
-            <div class="p-4 md:p-6 bg-zinc-950">
-                <div class="max-w-4xl mx-auto flex items-end gap-2 md:gap-4 bg-zinc-900 p-2 md:p-3 rounded-[2rem] border border-zinc-800">
-                    <button onclick="document.getElementById('file-input').click()" class="p-3 text-zinc-500 hover:text-red-600 transition-all">
-                        <i class="fa-solid fa-paperclip"></i>
-                        <input type="file" id="file-input" class="hidden" onchange="handleFileUpload(this)">
-                    </button>
-                    <textarea id="msg-input" rows="1" class="flex-1 bg-transparent border-none outline-none p-2 md:p-3 text-sm font-bold text-zinc-200 placeholder-zinc-600 resize-none" placeholder="اكتب رسالة أو أمر أدمن (ban/ , /mute/ , /tw/)..."></textarea>
-                    <button onclick="sendMessage()" class="bg-red-600 min-w-[40px] h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center text-white hover:scale-110 active:scale-95 transition-all shadow-lg shadow-red-600/20">
-                        <i class="fa-solid fa-paper-plane text-xs md:text-sm"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- مودال الإعدادات -->
-    <div id="settings-modal" class="fixed inset-0 z-[60] hidden bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
-        <div class="w-full max-w-md ml-glass p-8 md:p-10 rounded-[2.5rem] border border-zinc-800 max-h-[90vh] overflow-y-auto chat-scroll">
-            <div class="flex justify-between items-center mb-8">
-                <h3 class="text-2xl font-black">الإعدادات</h3>
-                <button onclick="toggleModal('settings-modal')" class="text-zinc-500 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
-            </div>
-            
-            <div class="space-y-6">
-                <!-- تغيير الصورة من داخل الإعدادات -->
-                <div class="relative w-24 h-24 md:w-32 md:h-32 mx-auto mb-6 group cursor-pointer" onclick="document.getElementById('settings-avatar-input').click()">
-                    <img id="settings-avatar-preview" src="" class="w-full h-full rounded-full object-cover border-4 border-red-600 p-1 bg-black">
-                    <div class="absolute inset-0 bg-black/70 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
-                        <i class="fa-solid fa-camera text-xl md:text-2xl text-white"></i>
-                    </div>
-                    <input type="file" id="settings-avatar-input" class="hidden" accept="image/*" onchange="previewAvatar(this, 'settings-avatar-preview')">
-                </div>
-                <p class="text-[10px] text-zinc-500 font-bold mb-4 uppercase text-center w-full block tracking-widest">تغيير الصورة</p>
-
-                <div class="text-right">
-                    <label class="text-[10px] text-zinc-500 font-bold uppercase mb-2 block">تغيير الاسم المستعار</label>
-                    <input type="text" id="set-nickname" class="w-full bg-zinc-950 border border-zinc-900 p-4 rounded-2xl text-white font-bold outline-none focus:border-red-600">
-                </div>
-                <div class="pt-4 space-y-3">
-                    <button onclick="updateSettings()" class="w-full btn-primary py-4 rounded-2xl font-black shadow-lg">حفظ التغييرات</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- لوحة المالك -->
-    <div id="admin-panel" class="fixed inset-0 z-[60] hidden bg-black/95 flex items-center justify-center p-4">
-        <div class="w-full max-w-2xl ml-glass p-8 md:p-10 rounded-[3rem] border border-zinc-800 max-h-[90vh] overflow-y-auto chat-scroll">
-            <div class="flex justify-between items-center mb-10">
-                <h3 class="text-xl md:text-2xl font-black text-yellow-500">OWNER PANEL</h3>
-                <button onclick="toggleModal('admin-panel')" class="text-zinc-500 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div class="bg-zinc-950 p-6 rounded-[2rem] border border-zinc-900">
-                    <h4 class="text-xs font-black text-red-600 mb-6 uppercase tracking-widest">إدارة الطاقم</h4>
-                    <input type="text" id="admin-search-user" placeholder="يوزر المستخدم..." class="w-full bg-black border border-zinc-900 p-4 rounded-2xl text-sm mb-4 font-bold outline-none focus:border-red-600">
-                    <div class="flex gap-2">
-                        <button onclick="setRank('ADMIN')" class="flex-1 bg-red-600 hover:bg-red-700 py-3 rounded-xl text-xs font-black uppercase transition-colors">ترقية</button>
-                        <button onclick="setRank('Member')" class="flex-1 bg-zinc-800 hover:bg-zinc-700 py-3 rounded-xl text-xs font-black uppercase text-zinc-300 transition-colors">سحب</button>
-                    </div>
-                </div>
-
-                <div class="bg-zinc-950 p-6 rounded-[2rem] border border-zinc-900">
-                    <h4 class="text-xs font-black text-yellow-500 mb-6 uppercase tracking-widest">معلومات الأوامر (في الشات)</h4>
-                    <ul class="text-xs text-zinc-400 space-y-3 leading-relaxed" dir="ltr" style="text-align: left;">
-                        <li><span class="text-red-500 font-bold">/ban user hours</span> : Ban a user for specified hours.</li>
-                        <li><span class="text-red-500 font-bold">/mute user hours</span> : Mute a user for specified hours.</li>
-                        <li><span class="text-yellow-500 font-bold">/tw user</span> : Toggle Verified ⭐️ Badge for a user.</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, doc, setDoc, getDoc, onSnapshot, query, where, updateDoc, deleteDoc, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyDJdlo9mSdINt3A4KLvpBdxXjK28LdrWB0",
-            authDomain: "policerp-a71c8.firebaseapp.com",
-            projectId: "policerp-a71c8",
-            storageBucket: "policerp-a71c8.firebasestorage.app",
-            messagingSenderId: "569720054342",
-            appId: "1:569720054342:web:858b7f239f5c35929ca047"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-        const appId = "mystery-rp-final-v3";
-
-        let currentUser = null;
-        let activeChannel = 'rules';
-        let isLoginPage = true;
-        let userListenerUnsubscribe = null;
-
-        // --- AUTH ---
-        const initAuth = async () => {
-            try {
-                await signInAnonymously(auth);
-                console.log("Logged in anonymously");
-            } catch (err) {
-                console.error("Auth Error:", err);
-            }
-        };
-
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                console.log("Auth state verified:", user.uid);
-            } else {
-                initAuth();
-            }
-        });
-
-        window.toggleAuth = (isLogin) => {
-            isLoginPage = isLogin;
-            document.getElementById('auth-toggle-btn').textContent = isLogin ? "إنشاء حساب جديد" : "تسجيل الدخول بحسابي";
-            document.querySelector('#auth-screen h1').textContent = isLogin ? "تسجيل الدخول" : "انضم لـ MysteryLife";
-            document.querySelector('#auth-screen button').onclick = isLogin ? handleLogin : handleSignup;
-        };
-
-        window.handleSignup = async () => {
-            const user = document.getElementById('login-user').value.trim();
-            const pass = document.getElementById('login-pass').value.trim();
-            if(!user || !pass) return showToast("املا البيانات يا بطل");
-
-            const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', user);
-            const snap = await getDoc(userRef);
-            if(snap.exists()) return showToast("هذا اليوزر مستخدم");
-
-            const rank = (user === 'i7') ? 'OWNER' : 'Member';
-            const password = (user === 'i7') ? 'i7227711' : pass;
-
-            await setDoc(userRef, {
-                username: user,
-                password: password,
-                rank: rank,
-                createdAt: serverTimestamp(),
-                isBanned: false,
-                isMuted: false,
-                isVerified: false
-            });
-
-            currentUser = { username: user, rank: rank };
-            showSetup();
-        };
-
-        window.handleLogin = async () => {
-            const user = document.getElementById('login-user').value.trim();
-            const pass = document.getElementById('login-pass').value.trim();
-            
-            if(!user || !pass) return showToast("املا البيانات");
-
-            if(user === 'i7' && pass === 'i7227711') {
-                const ownerRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', 'i7');
-                const oSnap = await getDoc(ownerRef);
-                if(!oSnap.exists()) {
-                    await setDoc(ownerRef, { username: 'i7', password: 'i7227711', rank: 'OWNER', isBanned: false, isMuted: false, isVerified: false });
-                } else if (oSnap.data().rank !== 'OWNER') {
-                    await updateDoc(ownerRef, { rank: 'OWNER' });
-                }
-            }
-
-            const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', user);
-            const snap = await getDoc(userRef);
-
-            if(!snap.exists() || snap.data().password !== pass) {
-                return showToast("اليوزر او الباسورد غلط");
-            }
-
-            const data = snap.data();
-            if(data.isBanned) {
-                const now = Date.now();
-                if(data.banUntil > now) {
-                    showBanScreen(data.banUntil, data.banReason);
-                    return;
-                } else {
-                    await updateDoc(userRef, { isBanned: false });
-                }
-            }
-
-            currentUser = { ...data, id: user };
-            if(!data.nickname) return showSetup();
-            enterApp();
-        };
-
-        function showSetup() {
-            document.getElementById('auth-screen').classList.add('hidden');
-            document.getElementById('profile-setup').classList.remove('hidden');
-        }
-
-        window.completeSetup = async () => {
-            const nick = document.getElementById('setup-nickname').value.trim();
-            if(!nick) return showToast("اكتب اسم مستعار");
-            
-            const avatar = document.getElementById('avatar-preview').src;
-            const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', currentUser.username);
-            
-            await updateDoc(userRef, { nickname: nick, avatar: avatar });
-            currentUser.nickname = nick;
-            currentUser.avatar = avatar;
-            enterApp();
-        };
-
-        // --- APP ---
-        function enterApp() {
-            document.getElementById('profile-setup').classList.add('hidden');
-            document.getElementById('auth-screen').classList.add('hidden');
-            document.getElementById('main-app').classList.remove('hidden');
-
-            updateUIInfo();
-
-            if(currentUser.rank === 'OWNER' || currentUser.rank === 'ADMIN') {
-                document.getElementById('admin-channel-container').classList.remove('hidden');
-                if(currentUser.rank === 'OWNER') {
-                    document.getElementById('admin-actions').classList.remove('hidden');
-                    document.getElementById('admin-actions').classList.add('flex');
-                }
-            }
-
-            switchChannel('general');
-            listenToMyData(); // Monitor if I get banned, muted, or verified while online
-        }
-
-        function updateUIInfo() {
-            const verifiedStar = currentUser.isVerified ? '<span class="text-yellow-400 text-sm ml-1">⭐️</span>' : '';
-            document.getElementById('my-nickname').innerHTML = `${currentUser.nickname} ${verifiedStar}`;
-            document.getElementById('my-avatar').src = currentUser.avatar;
-            document.getElementById('my-rank-text').textContent = currentUser.rank;
-        }
-
-        // Live monitor current user document
-        function listenToMyData() {
-            if(userListenerUnsubscribe) userListenerUnsubscribe();
-            userListenerUnsubscribe = onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'users', currentUser.username), (docSnap) => {
-                if(docSnap.exists()) {
-                    const data = docSnap.data();
-                    currentUser = { ...data, id: docSnap.id };
-                    updateUIInfo();
-
-                    if(data.isBanned && data.banUntil > Date.now()) {
-                        showBanScreen(data.banUntil, data.banReason);
-                    }
-                }
-            });
-        }
-
-        let chatUnsubscribe = null;
-        window.switchChannel = (channel) => {
-            activeChannel = channel;
-            document.querySelectorAll('.channel-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(`btn-${channel}`).classList.add('active');
-            
-            const titles = { rules: 'القوانين العامة', info: 'تعريف الإدارة', general: 'الشات العام', staff: 'غرفة العمليات' };
-            document.getElementById('channel-title').textContent = titles[channel];
-            
-            if(window.innerWidth < 768) {
-                document.getElementById('sidebar').classList.add('hidden');
-            }
-
-            if(chatUnsubscribe) chatUnsubscribe();
-            
-            const q = query(
-                collection(db, 'artifacts', appId, 'public', 'data', 'chats'),
-                where('channel', '==', activeChannel)
-            );
-
-            chatUnsubscribe = onSnapshot(q, (snapshot) => {
-                const chatBox = document.getElementById('chat-box');
-                chatBox.innerHTML = '';
-                
-                const messages = [];
-                snapshot.forEach(doc => {
-                    messages.push({ id: doc.id, ...doc.data() });
-                });
-
-                messages.sort((a, b) => {
-                    const timeA = a.timestamp?.seconds || 0;
-                    const timeB = b.timestamp?.seconds || 0;
-                    return timeA - timeB;
-                });
-
-                messages.forEach(msg => {
-                    renderMessage(msg.id, msg);
-                });
-                
-                chatBox.scrollTop = chatBox.scrollHeight;
-            }, (err) => console.error("Chat sync error:", err));
-        };
-
-        function renderMessage(id, data) {
-            const isMe = data.senderId === currentUser.username;
-            const chatBox = document.getElementById('chat-box');
-            
-            const msgDiv = document.createElement('div');
-            msgDiv.className = `flex gap-2 md:gap-4 ${isMe ? 'flex-row-reverse' : ''} group transition-all duration-300`;
-            
-            const tag = data.senderRank === 'OWNER' ? '<span class="owner-tag">OWNER</span>' : 
-                        data.senderRank === 'ADMIN' ? '<span class="admin-tag">ADMIN</span>' : 
-                        '<span class="member-tag">MEMBER</span>';
-                        
-            const verifiedStar = data.senderVerified ? '<span class="text-yellow-400 text-xs">⭐️</span>' : '';
-
-            let content = `<p class="text-xs md:text-[13px] font-bold leading-relaxed break-words">${data.text || ""}</p>`;
-            if(data.type === 'image') content = `<img src="${data.file}" class="max-w-xs rounded-2xl border border-zinc-800 shadow-2xl mt-1">`;
-            if(data.type === 'audio') content = `<audio controls class="h-8 w-40 md:w-48 mt-1"><source src="${data.file}"></audio>`;
-
-            msgDiv.innerHTML = `
-                <img src="${data.senderAvatar}" class="w-8 h-8 md:w-10 md:h-10 rounded-full border border-zinc-800 self-end mb-1 object-cover flex-shrink-0">
-                <div class="max-w-[75%] ${isMe ? 'text-left' : 'text-right'}">
-                    <div class="flex items-center gap-1 md:gap-2 mb-1.5 ${isMe ? 'flex-row-reverse' : ''}">
-                        <span class="text-[10px] font-black text-zinc-500 flex items-center gap-1">${data.senderNick} ${verifiedStar}</span>
-                        ${tag}
-                    </div>
-                    <div class="p-3 md:p-4 rounded-2xl md:rounded-3xl ${isMe ? 'bg-red-600 text-white rounded-bl-none shadow-[0_4px_15px_rgba(255,0,0,0.2)]' : 'bg-zinc-900 text-zinc-300 rounded-tr-none'} relative">
-                        ${content}
-                        <div class="absolute -bottom-6 ${isMe ? 'left-0' : 'right-0'} flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                            ${(currentUser.rank === 'ADMIN' || currentUser.rank === 'OWNER') ? `<button onclick="deleteMsg('${id}')" class="text-[9px] text-zinc-600 hover:text-red-500 font-black uppercase tracking-tighter">Delete</button>` : ''}
-                        </div>
-                    </div>
-                </div>
-            `;
-            chatBox.appendChild(msgDiv);
-        }
-
-        window.sendMessage = async () => {
-            const input = document.getElementById('msg-input');
-            const text = input.value.trim();
-            if(!text) return;
-
-            // Admin Chat Commands Logic
-            if(text.startsWith('/')) {
-                if (currentUser.rank !== 'ADMIN' && currentUser.rank !== 'OWNER') {
-                    input.value = '';
-                    return showToast("هذه الأوامر للإدارة فقط");
-                }
-                
-                const parts = text.split(' ');
-                const cmd = parts[0].toLowerCase();
-                const targetUser = parts[1];
-                const duration = parseFloat(parts[2]) || 0;
-
-                if(!targetUser) return showToast("الرجاء تحديد يوزر الشخص");
-
-                const targetRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', targetUser);
-                const targetSnap = await getDoc(targetRef);
-                
-                if(!targetSnap.exists()) return showToast("اليوزر غير موجود");
-
-                if (cmd === '/ban') {
-                    if(!duration) return showToast("الرجاء تحديد المدة بالساعات");
-                    await updateDoc(targetRef, {
-                        isBanned: true,
-                        banUntil: Date.now() + (duration * 3600 * 1000),
-                        banReason: `باند من الإدارة لمدة ${duration} ساعة`
-                    });
-                    showToast(`تم حظر ${targetUser} لمدة ${duration} ساعة`);
-                } else if (cmd === '/mute') {
-                    if(!duration) return showToast("الرجاء تحديد المدة بالساعات");
-                    await updateDoc(targetRef, {
-                        isMuted: true,
-                        muteUntil: Date.now() + (duration * 3600 * 1000)
-                    });
-                    showToast(`تم إعطاء ميوت لـ ${targetUser} لمدة ${duration} ساعة`);
-                } else if (cmd === '/tw') {
-                    const currentStatus = targetSnap.data().isVerified || false;
-                    await updateDoc(targetRef, { isVerified: !currentStatus });
-                    showToast(`تم ${!currentStatus ? 'توثيق' : 'إزالة توثيق'} ${targetUser}`);
-                } else {
-                    showToast("أمر غير معروف");
-                }
-                
-                input.value = '';
-                input.style.height = 'auto';
-                return; // Stop execution, don't send the command as a chat message
-            }
-
-            // Normal Message Logic
-            if((activeChannel === 'rules' || activeChannel === 'info') && currentUser.rank === 'Member') {
-                return showToast("فقط الإدارة تقدر تكتب هنا");
-            }
-
-            if(currentUser.isMuted && currentUser.muteUntil > Date.now()) {
-                const hoursLeft = ((currentUser.muteUntil - Date.now()) / 3600000).toFixed(1);
-                return showToast(`أنت معطى ميوت. يتبقى: ${hoursLeft} ساعة`);
-            } else if (currentUser.isMuted && currentUser.muteUntil <= Date.now()) {
-                // Lift mute if time passed
-                const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', currentUser.username);
-                await updateDoc(userRef, { isMuted: false });
-                currentUser.isMuted = false;
-            }
-
-            try {
-                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'chats'), {
-                    channel: activeChannel,
-                    text: text,
-                    senderId: currentUser.username,
-                    senderNick: currentUser.nickname,
-                    senderAvatar: currentUser.avatar,
-                    senderRank: currentUser.rank,
-                    senderVerified: currentUser.isVerified || false,
-                    type: 'text',
-                    timestamp: serverTimestamp()
-                });
-                input.value = '';
-                input.style.height = 'auto';
-            } catch (e) {
-                console.error("Send Error:", e);
-                showToast("فشل في إرسال الرسالة");
-            }
-        };
-
-        window.handleFileUpload = async (input) => {
-            if(!input.files?.[0]) return;
-            
-            if(currentUser.isMuted && currentUser.muteUntil > Date.now()) {
-                return showToast("أنت معطى ميوت ولا يمكنك إرسال ملفات");
-            }
-
-            const file = input.files[0];
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-                const type = file.type.startsWith('image') ? 'image' : file.type.startsWith('audio') ? 'audio' : 'file';
-                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'chats'), {
-                    channel: activeChannel,
-                    file: e.target.result,
-                    senderId: currentUser.username,
-                    senderNick: currentUser.nickname,
-                    senderAvatar: currentUser.avatar,
-                    senderRank: currentUser.rank,
-                    senderVerified: currentUser.isVerified || false,
-                    type: type,
-                    timestamp: serverTimestamp()
-                });
-            };
-            reader.readAsDataURL(file);
-        };
-
-        window.deleteMsg = async (id) => {
-            await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'chats', id));
-        };
-
-        // --- OWNER ---
-        window.setRank = async (rank) => {
-            const target = document.getElementById('admin-search-user').value.trim();
-            if(!target) return;
-            const ref = doc(db, 'artifacts', appId, 'public', 'data', 'users', target);
-            const snap = await getDoc(ref);
-            if(!snap.exists()) return showToast("اليوزر غير موجود");
-            await updateDoc(ref, { rank: rank });
-            showToast("تم تحديث الرتبة");
-        };
-
-        // --- UTILS ---
-        window.previewAvatar = (input, previewId) => {
-            if (input.files?.[0]) {
-                const reader = new FileReader();
-                reader.onload = (e) => document.getElementById(previewId).src = e.target.result;
-                reader.readAsDataURL(input.files[0]);
-            }
-        };
-
-        window.showToast = (msg) => {
-            const t = document.getElementById('toast');
-            document.getElementById('toast-msg').textContent = msg;
-            t.classList.remove('hidden');
-            setTimeout(() => t.classList.add('hidden'), 3000);
-        };
-
-        window.toggleModal = (id) => document.getElementById(id).classList.toggle('hidden');
-        window.toggleSidebar = () => document.getElementById('sidebar').classList.toggle('hidden');
-
-        window.openSettings = () => {
-            document.getElementById('set-nickname').value = currentUser.nickname || '';
-            document.getElementById('settings-avatar-preview').src = currentUser.avatar || '';
-            toggleModal('settings-modal');
-        };
-
-        window.updateSettings = async () => {
-            const nick = document.getElementById('set-nickname').value.trim();
-            const newAvatarSrc = document.getElementById('settings-avatar-preview').src;
-            
-            const updates = {};
-            if(nick) updates.nickname = nick;
-            if(newAvatarSrc && !newAvatarSrc.includes('ui-avatars')) updates.avatar = newAvatarSrc;
-
-            if (Object.keys(updates).length > 0) {
-                const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', currentUser.username);
-                await updateDoc(userRef, updates);
-                showToast("تم تحديث الملف الشخصي");
-            }
-            toggleModal('settings-modal');
-        };
-
-        window.initAudioContext = () => { if(window.AudioContext) new AudioContext(); };
-
-        function showBanScreen(until, reason) {
-            document.getElementById('auth-screen').classList.add('hidden');
-            document.getElementById('main-app').classList.add('hidden');
-            const screen = document.getElementById('banned-screen');
-            screen.classList.remove('hidden');
-            document.getElementById('ban-reason').textContent = reason;
-            
-            const timer = setInterval(() => {
-                const diff = until - Date.now();
-                if(diff <= 0) { clearInterval(timer); location.reload(); }
-                const h = Math.floor(diff / 3600000);
-                const m = Math.floor((diff % 3600000) / 60000);
-                const s = Math.floor((diff % 60000) / 1000);
-                document.getElementById('ban-timer').textContent = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-            }, 1000);
-        }
-
-        document.getElementById('msg-input').oninput = function() {
-            this.style.height = 'auto';
-            this.style.height = (this.scrollHeight) + 'px';
-        };
-
-    </script>
+  `);
+  $('#adAction').addEventListener('change', e => {
+    $('#adSrvRow').style.display = e.target.value === 'delserver' ? 'block' : 'none';
+  });
+}
+
+function applyAdminAction(){
+  const un = $('#adUser').value.trim();
+  const action = $('#adAction').value;
+  const mins = parseInt($('#adMins').value) || 10;
+  const u = Object.values(DB.users).find(x => x.username.toLowerCase() === un.toLowerCase());
+  if(!u){ toast('العضو غير موجود'); return; }
+  if(u.isOwner && action !== 'verify'){ toast('لا يمكن تنفيذ ذلك على الأونر'); return; }
+
+  switch(action){
+    case 'ban':
+      u.banned = true;
+      logAction(ME, `حظر العضو @${u.username} من الموقع`, u);
+      toast('تم الحظر ✔', true); break;
+    case 'unban':
+      u.banned = false;
+      logAction(ME, `فك الحظر عن @${u.username}`, u);
+      toast('تم فك الحظر ✔', true); break;
+    case 'timeout':
+      u.timeout = now() + mins * 60000;
+      logAction(ME, `تايم أوت ${mins} دقيقة للعضو @${u.username}`, u);
+      toast(`تم إعطاء تايم أوت ${mins} دقيقة ✔`, true); break;
+    case 'mute':
+      u.mute = true;
+      logAction(ME, `كتم العضو @${u.username}`, u);
+      toast('تم الكتم ✔', true); break;
+    case 'unmute':
+      u.mute = false; u.timeout = 0;
+      logAction(ME, `فك الكتم عن @${u.username}`, u);
+      toast('تم فك الكتم ✔', true); break;
+    case 'verify':
+      u.star = true;
+      logAction(ME, `وثّق العضو @${u.username} ⭐`, u);
+      toast('تم التوثيق ⭐', true); break;
+    case 'unverify':
+      u.star = false;
+      logAction(ME, `أزال توثيق @${u.username}`, u);
+      toast('تم إزالة التوثيق', true); break;
+    case 'delserver': {
+      const sn = $('#adSrvName').value.trim();
+      const srv = Object.values(DB.servers).find(s => s.ownerId === u.id && s.name.toLowerCase() === sn.toLowerCase());
+      if(!srv){ toast('لم يتم العثور على الخادم'); return; }
+      if(srv.id === 's_main' || srv.id === 's_owner'){ toast('لا يمكن حذف خادم أساسي'); return; }
+      delete DB.servers[srv.id];
+      if(state.serverId === srv.id){ state.serverId = 's_main'; pickFirstChannel('s_main'); }
+      logAction(ME, `حذف خادم "${srv.name}" المملوك لـ @${u.username}`, u);
+      saveServers();
+      toast('تم حذف الخادم ✔', true); break;
+    }
+  }
+  DB.users[u.id] = u;
+  saveUsers(); closeModal(); renderAll();
+}
+
+/* =====================================================================
+   Init
+   ===================================================================== */
+(function init(){
+  ensureBaseServers();
+  watchFirebase();
+
+  // انتظار أول تحميل من Firebase
+  let waited = 0;
+  const check = setInterval(() => {
+    waited += 100;
+    if(Object.keys(DB.users).length > 0 || waited > 4000){
+      clearInterval(check);
+      $('#loadingScreen').classList.add('hidden');
+
+      // استرجاع الجلسة
+      let savedId = null;
+      try { savedId = localStorage.getItem('itex_session'); } catch(e){}
+      const saved = savedId ? DB.users[savedId] : null;
+      if(saved && !saved.banned){
+        enterApp(saved);
+      } else {
+        $('#authScreen').classList.remove('hidden');
+      }
+    }
+  }, 100);
+})();
+
+window.addEventListener('resize', () => {
+  if(window.innerWidth > 920) closePanels();
+});
+document.addEventListener('keydown', e => { if(e.key === 'Escape') closeModal(); });
+</script>
 </body>
 </html>
