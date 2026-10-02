@@ -2,1428 +2,853 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>iTeX — Community Network</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Space • 2027</title>
 <style>
-:root{
-  --bg:#07070a; --panel:#101017; --panel2:#15151e; --panel3:#1b1b26;
-  --line:#242433; --text:#e9e9f2; --muted:#8b8b9e;
-  --accent:#e11d2e; --accent2:#ff4155; --gold:#ffc53d; --green:#25c26e;
-}
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body{height:100%}
-body{
-  font-family:'Segoe UI',Tahoma,'Noto Kufi Arabic',sans-serif;
-  background:var(--bg);color:var(--text);overflow:hidden;height:100dvh;
-}
-button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
-input,select,textarea{font-family:inherit;outline:none}
-::-webkit-scrollbar{width:7px;height:7px}
-::-webkit-scrollbar-thumb{background:#2a2a3a;border-radius:8px}
-::-webkit-scrollbar-track{background:transparent}
-.hidden{display:none!important}
+/* ============ الأساسيات ============ */
+* { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', 'Tahoma', sans-serif; }
 
-.auth-screen{
-  position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+:root {
+  --bg: #0a0a14;
+  --bg2: #12121f;
+  --card: rgba(255,255,255,0.04);
+  --card-hover: rgba(255,255,255,0.07);
+  --border: rgba(255,255,255,0.08);
+  --accent: #6c5ce7;
+  --accent2: #00d9ff;
+  --success: #00ffa3;
+  --danger: #ff4757;
+  --text: #e8e8f0;
+  --text-dim: #8a8a9a;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* خلفية متحركة */
+body::before {
+  content:'';
+  position: fixed; inset: 0;
   background:
-    radial-gradient(circle at 20% 15%,rgba(225,29,46,.18),transparent 45%),
-    radial-gradient(circle at 80% 85%,rgba(225,29,46,.12),transparent 45%),
-    #07070a;
-  z-index:500;padding:18px;
+    radial-gradient(circle at 20% 20%, rgba(108,92,231,0.15), transparent 40%),
+    radial-gradient(circle at 80% 80%, rgba(0,217,255,0.12), transparent 40%),
+    radial-gradient(circle at 50% 50%, rgba(255,71,87,0.05), transparent 60%);
+  z-index: -1;
+  animation: bgMove 20s ease-in-out infinite;
 }
-.auth-card{
-  width:100%;max-width:400px;background:linear-gradient(160deg,#14141d,#0d0d13);
-  border:1px solid var(--line);border-radius:22px;padding:34px 26px 26px;
-  box-shadow:0 30px 80px rgba(0,0,0,.75),inset 0 1px 0 rgba(255,255,255,.04);
-  animation:pop .45s cubic-bezier(.2,.9,.3,1.3);
+@keyframes bgMove {
+  0%,100% { transform: scale(1) rotate(0deg); }
+  50% { transform: scale(1.1) rotate(5deg); }
 }
-@keyframes pop{from{opacity:0;transform:translateY(24px) scale(.96)}to{opacity:1;transform:none}}
-.brand{
-  font-size:40px;font-weight:900;letter-spacing:-1px;text-align:center;
-  background:linear-gradient(92deg,#fff 10%,var(--accent2) 60%,var(--accent));
-  -webkit-background-clip:text;background-clip:text;color:transparent;
-  font-style:italic;
-}
-.brand-sub{text-align:center;color:var(--muted);font-size:10px;letter-spacing:5px;margin-top:4px;margin-bottom:26px}
-.field{margin-bottom:12px}
-.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
-.field input{
-  width:100%;padding:13px 14px;border-radius:12px;background:#0b0b11;
-  border:1px solid var(--line);color:var(--text);font-size:14px;transition:.2s;
-}
-.field input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(225,29,46,.14)}
-.btn-main{
-  width:100%;padding:13px;border-radius:12px;font-weight:700;font-size:15px;
-  background:linear-gradient(92deg,var(--accent),#a8121f);color:#fff;margin-top:8px;
-  transition:.2s;box-shadow:0 8px 22px rgba(225,29,46,.3);
-}
-.btn-main:hover{filter:brightness(1.12);transform:translateY(-1px)}
-.btn-ghost{
-  width:100%;padding:11px;border-radius:12px;font-size:13px;color:var(--muted);
-  border:1px solid var(--line);margin-top:10px;transition:.2s;background:#0b0b11;
-}
-.btn-ghost:hover{color:var(--text);border-color:#3a3a4d}
-.auth-msg{text-align:center;font-size:13px;margin-top:12px;min-height:18px;color:var(--accent2)}
-.auth-msg.ok{color:var(--green)}
-.loading-screen{
-  position:fixed;inset:0;background:#07070a;z-index:9999;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;
-}
-.spinner{
-  width:52px;height:52px;border:4px solid #1b1b26;border-top-color:var(--accent);
-  border-radius:50%;animation:spin 1s linear infinite;
-}
-@keyframes spin{to{transform:rotate(360deg)}}
-.loading-screen p{color:var(--muted);font-size:14px}
-.loading-screen .err{color:#ff4155;font-size:12px;text-align:center;padding:0 20px;line-height:1.7}
 
-.app{display:flex;flex-direction:row-reverse;height:100dvh;width:100%}
-.rail{
-  width:76px;flex:0 0 76px;background:#0a0a10;border-left:1px solid var(--line);
-  display:flex;flex-direction:column;align-items:center;gap:10px;
-  padding:12px 0;overflow-y:auto;overflow-x:hidden;
+/* ============ شاشة الدخول ============ */
+#loginScreen {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 100vh; padding: 20px;
 }
-.rail::-webkit-scrollbar{width:0}
-.srv{
-  width:48px;height:48px;border-radius:16px;background:var(--panel3);
-  display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;
-  color:var(--muted);transition:.2s;flex:0 0 auto;overflow:hidden;position:relative;
-  border:1px solid transparent;
-}
-.srv img{width:100%;height:100%;object-fit:cover}
-.srv:hover{border-radius:14px;background:var(--accent);color:#fff;transform:translateY(-2px)}
-.srv.active{border-radius:14px;background:linear-gradient(140deg,var(--accent),#8f0f1b);color:#fff;border-color:rgba(255,255,255,.15)}
-.srv.add{background:transparent;border:1.5px dashed #33334a;color:var(--green);font-size:24px}
-.srv.add:hover{background:var(--green);color:#04150c;border-style:solid}
-.rail-sep{width:32px;height:1px;background:var(--line);flex:0 0 auto}
 
-.channels{
-  width:252px;flex:0 0 252px;background:var(--panel);border-left:1px solid var(--line);
-  display:flex;flex-direction:column;overflow:hidden;
+.login-box {
+  background: var(--card);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
+  padding: 50px 40px;
+  border-radius: 24px;
+  text-align: center;
+  width: 100%; max-width: 420px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05);
+  animation: fadeUp 0.6s ease;
 }
-.srvHead{
-  padding:14px 14px;border-bottom:1px solid var(--line);display:flex;
-  align-items:center;justify-content:space-between;gap:8px;min-height:62px;
-  background:linear-gradient(180deg,#14141d,#101017);
+@keyframes fadeUp {
+  from { opacity:0; transform: translateY(20px); }
+  to { opacity:1; transform: translateY(0); }
 }
-.srvHead .name{font-weight:800;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.srvHead .sub{font-size:10px;color:var(--accent2);letter-spacing:1px;margin-top:2px}
-.icon-btn{
-  width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;
-  color:var(--muted);font-size:16px;transition:.2s;flex:0 0 auto;
-}
-.icon-btn:hover{background:#22222f;color:#fff}
-.catList{flex:1;overflow-y:auto;padding:10px 8px 4px}
-.cat{margin-bottom:14px}
-.catName{
-  font-size:11px;color:var(--muted);font-weight:700;letter-spacing:1px;
-  padding:0 8px 6px;display:flex;align-items:center;justify-content:space-between;
-}
-.catName button{font-size:14px;color:var(--muted);padding:0 4px;border-radius:6px}
-.catName button:hover{color:var(--green)}
-.chan{
-  padding:9px 10px;border-radius:9px;font-size:13.5px;color:#a9a9bd;cursor:pointer;
-  display:flex;align-items:center;gap:7px;transition:.15s;margin-bottom:2px;
-}
-.chan:hover{background:#1a1a25;color:#fff}
-.chan.active{background:linear-gradient(90deg,rgba(225,29,46,.22),rgba(225,29,46,.05));color:#fff;font-weight:600}
-.chan .lock{font-size:10px;opacity:.6}
-.addBtn{
-  width:calc(100% - 16px);margin:2px 8px 10px;padding:8px;border-radius:9px;font-size:12px;
-  color:var(--muted);border:1px dashed #2e2e42;transition:.2s;
-}
-.addBtn:hover{color:var(--green);border-color:var(--green)}
-.empty{font-size:12px;color:#55556b;padding:8px 10px}
 
-.userBar{
-  border-top:1px solid var(--line);padding:9px 10px;display:flex;align-items:center;
-  gap:9px;background:#0c0c13;
+.login-box .lock-icon {
+  font-size: 48px;
+  margin-bottom: 15px;
+  display: inline-block;
+  animation: pulse 2s ease-in-out infinite;
 }
-.userBar .info{flex:1;min-width:0}
-.userBar .uname{font-size:13px;font-weight:700;display:flex;align-items:center;gap:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.userBar .urole{font-size:10px;color:var(--muted)}
-.av{border-radius:50%;object-fit:cover;flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff}
-.avTxt{background:linear-gradient(140deg,#3a3a52,#22222f);text-transform:uppercase}
+@keyframes pulse {
+  0%,100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
 
-.chat{flex:1;min-width:0;display:flex;flex-direction:column;background:#0c0c12}
-.chatHead{
-  height:62px;flex:0 0 62px;border-bottom:1px solid var(--line);display:flex;
-  align-items:center;gap:10px;padding:0 14px;background:#101017;
+.login-box h1 {
+  font-size: 26px;
+  margin-bottom: 8px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
-.chatHead .title{font-weight:800;font-size:15px;display:flex;align-items:center;gap:7px;flex:1;min-width:0}
-.chatHead .title span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.chatHead .sub{font-size:11px;color:var(--muted);font-weight:400}
-.adminBtn{
-  background:linear-gradient(92deg,var(--accent),#8f0f1b);color:#fff;padding:8px 14px;
-  border-radius:10px;font-size:12.5px;font-weight:700;white-space:nowrap;
-  box-shadow:0 6px 18px rgba(225,29,46,.3);transition:.2s;
-}
-.adminBtn:hover{filter:brightness(1.15)}
-.messages{flex:1;overflow-y:auto;padding:18px 16px 8px;display:flex;flex-direction:column;gap:2px}
-.msg{display:flex;gap:10px;padding:6px 8px;border-radius:10px;transition:.15s}
-.msg:hover{background:rgba(255,255,255,.022)}
-.msg .body{min-width:0;flex:1}
-.msg .top{display:flex;align-items:center;gap:7px;margin-bottom:2px;flex-wrap:wrap}
-.msg .who{font-weight:800;font-size:13.5px}
-.msg .time{font-size:10px;color:#5c5c72}
-.msg .txt{font-size:14px;line-height:1.55;color:#d6d6e2;word-wrap:break-word;white-space:pre-wrap}
-.msg.sys .txt{color:var(--accent2);font-size:12.5px;font-style:italic}
-.msg.sys{background:rgba(225,29,46,.05);border-right:2px solid var(--accent)}
-.welcome{
-  margin:auto;text-align:center;color:var(--muted);padding:30px;
-}
-.welcome .big{font-size:30px;font-weight:900;color:#fff;margin-bottom:8px;
-  background:linear-gradient(92deg,#fff,var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
-.composer{padding:10px 14px 14px;display:flex;gap:8px;align-items:center}
-.composer input{
-  flex:1;padding:13px 16px;border-radius:14px;background:#15151e;border:1px solid var(--line);
-  color:var(--text);font-size:14px;transition:.2s;min-width:0;
-}
-.composer input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(225,29,46,.1)}
-.sendBtn{
-  width:44px;height:44px;flex:0 0 44px;border-radius:50%;
-  background:linear-gradient(140deg,var(--accent),#95101c);color:#fff;font-size:17px;
-  display:flex;align-items:center;justify-content:center;transition:.2s;
-  box-shadow:0 6px 18px rgba(225,29,46,.3);
-}
-.sendBtn:hover{transform:scale(1.07)}
 
-.friends{
-  width:252px;flex:0 0 252px;background:var(--panel);border-right:1px solid var(--line);
-  display:flex;flex-direction:column;overflow:hidden;
+.login-box p.sub {
+  color: var(--text-dim);
+  font-size: 14px;
+  margin-bottom: 25px;
 }
-.fHead{padding:16px 14px;font-weight:800;font-size:15px;border-bottom:1px solid var(--line);background:#101017}
-.fBody{flex:1;overflow-y:auto;padding:10px}
-.fSection{font-size:11px;color:var(--muted);font-weight:700;letter-spacing:1px;margin:14px 6px 6px}
-.fSection:first-child{margin-top:4px}
-.addFriend{display:flex;gap:6px;padding:0 4px 4px}
-.addFriend input{
-  flex:1;min-width:0;padding:9px 11px;border-radius:10px;background:#0b0b11;
-  border:1px solid var(--line);color:var(--text);font-size:12.5px;
-}
-.addFriend input:focus{border-color:var(--accent)}
-.addFriend button{
-  padding:9px 12px;border-radius:10px;background:var(--accent);color:#fff;font-size:12.5px;font-weight:700;
-}
-.fRow{
-  display:flex;align-items:center;gap:9px;padding:8px 9px;border-radius:11px;cursor:pointer;
-  transition:.15s;margin-bottom:2px;
-}
-.fRow:hover{background:#1a1a25}
-.fRow.active{background:linear-gradient(90deg,rgba(225,29,46,.22),rgba(225,29,46,.04))}
-.fName{flex:1;min-width:0;font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:flex;align-items:center;gap:5px}
-.mini{padding:5px 9px;border-radius:8px;font-size:11px;font-weight:700;transition:.2s}
-.mini.ok{background:rgba(37,194,110,.15);color:var(--green)}
-.mini.ok:hover{background:var(--green);color:#04150c}
-.mini.no{background:rgba(225,29,46,.15);color:var(--accent2)}
-.mini.no:hover{background:var(--accent);color:#fff}
-.dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex:0 0 auto}
 
-.overlay{
-  position:fixed;inset:0;background:rgba(3,3,6,.78);backdrop-filter:blur(5px);
-  display:flex;align-items:center;justify-content:center;z-index:900;padding:16px;
-  animation:fade .18s;
+.code-input {
+  width: 100%;
+  padding: 16px;
+  border-radius: 14px;
+  border: 2px solid var(--border);
+  background: rgba(0,0,0,0.3);
+  color: var(--text);
+  font-size: 22px;
+  text-align: center;
+  letter-spacing: 14px;
+  font-weight: 600;
+  transition: 0.3s;
 }
-@keyframes fade{from{opacity:0}to{opacity:1}}
-.modal{
-  width:100%;max-width:440px;max-height:88dvh;overflow-y:auto;
-  background:linear-gradient(165deg,#15151f,#0e0e15);border:1px solid var(--line);
-  border-radius:20px;padding:22px;box-shadow:0 30px 90px rgba(0,0,0,.8);
-  animation:pop .28s cubic-bezier(.2,.9,.3,1.25);
+.code-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px rgba(108,92,231,0.15);
 }
-.modal h3{font-size:17px;margin-bottom:16px;display:flex;align-items:center;gap:8px}
-.modal h3 .tag{font-size:10px;background:var(--accent);padding:3px 8px;border-radius:20px;font-weight:700}
-.modal .hint{font-size:11.5px;color:var(--muted);margin-top:-8px;margin-bottom:14px;line-height:1.6}
-.row{margin-bottom:12px}
-.row label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
-.row input,.row select{
-  width:100%;padding:11px 13px;border-radius:11px;background:#0b0b11;
-  border:1px solid var(--line);color:var(--text);font-size:13.5px;
-}
-.row input:focus,.row select:focus{border-color:var(--accent)}
-.modal-actions{display:flex;gap:9px;margin-top:18px}
-.modal-actions button{flex:1;padding:12px;border-radius:11px;font-weight:700;font-size:13.5px;transition:.2s}
-.mOk{background:linear-gradient(92deg,var(--accent),#95101c);color:#fff}
-.mOk:hover{filter:brightness(1.15)}
-.mNo{background:#1b1b26;color:var(--muted);border:1px solid var(--line)}
-.mNo:hover{color:#fff}
-.chk{display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:10px;background:#0b0b11;border:1px solid var(--line);margin-bottom:8px;font-size:13px;cursor:pointer}
-.chk input{width:17px;height:17px;accent-color:var(--accent);cursor:pointer}
-.chk:hover{border-color:#33334a}
 
-#toasts{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:2000;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none}
-.toast{
-  background:#1a1a26;border:1px solid var(--line);border-right:3px solid var(--accent);
-  padding:11px 18px;border-radius:12px;font-size:13px;box-shadow:0 12px 40px rgba(0,0,0,.6);
-  animation:pop .25s;max-width:90vw;
+.btn {
+  padding: 14px 28px;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, var(--accent), #8b7cf6);
+  transition: 0.3s;
+  width: 100%;
+  margin-top: 15px;
+  position: relative;
+  overflow: hidden;
 }
-.toast.ok{border-right-color:var(--green)}
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(108,92,231,0.4);
+}
+.btn:active { transform: translateY(0); }
 
-.mobile-only{display:none!important}
+.error-msg {
+  color: var(--danger);
+  margin-top: 15px;
+  font-size: 14px;
+  min-height: 20px;
+}
 
-@media (max-width:920px){
-  .rail{width:64px;flex:0 0 64px;gap:8px}
-  .srv{width:44px;height:44px;border-radius:14px;font-size:14px}
-  .channels{
-    position:fixed;top:0;bottom:0;left:64px;width:min(262px,78vw);z-index:120;
-    transform:translateX(-115%);transition:transform .26s cubic-bezier(.3,.9,.3,1);
-    box-shadow:14px 0 50px rgba(0,0,0,.75);
+/* ============ القائمة الجانبية ============ */
+#mainScreen {
+  display: flex;
+  min-height: 100vh;
+  position: relative;
+}
+
+.sidebar {
+  width: 260px;
+  background: rgba(18,18,31,0.8);
+  backdrop-filter: blur(20px);
+  border-left: 1px solid var(--border);
+  padding: 25px 20px;
+  display: flex;
+  flex-direction: column;
+  transition: 0.4s cubic-bezier(0.4,0,0.2,1);
+  position: relative;
+  z-index: 100;
+}
+.sidebar.collapsed {
+  width: 80px;
+}
+.sidebar.collapsed .nav-text,
+.sidebar.collapsed .logo-text,
+.sidebar.collapsed .user-info { display: none; }
+.sidebar.collapsed .nav-item { justify-content: center; }
+
+.sidebar-header {
+  display: flex; align-items: center; gap: 12px;
+  padding-bottom: 25px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 20px;
+}
+.logo-icon {
+  width: 42px; height: 42px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+.logo-text {
+  font-size: 18px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #fff, var(--accent2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.nav-list {
+  list-style: none;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.nav-item {
+  display: flex; align-items: center; gap: 14px;
+  padding: 13px 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  color: var(--text-dim);
+  font-size: 15px;
+  font-weight: 500;
+  transition: 0.25s;
+  border: 1px solid transparent;
+  user-select: none;
+}
+.nav-item:hover {
+  background: var(--card-hover);
+  color: var(--text);
+}
+.nav-item.active {
+  background: linear-gradient(135deg, rgba(108,92,231,0.2), rgba(0,217,255,0.1));
+  color: #fff;
+  border-color: rgba(108,92,231,0.4);
+}
+.nav-item .icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.sidebar-footer {
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.logout-btn {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  width: 100%;
+  padding: 12px;
+  background: rgba(255,71,87,0.1);
+  color: var(--danger);
+  border: 1px solid rgba(255,71,87,0.2);
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: 0.25s;
+}
+.logout-btn:hover {
+  background: rgba(255,71,87,0.2);
+}
+
+/* زر تصغير القائمة */
+.toggle-btn {
+  position: absolute;
+  top: 25px;
+  left: -14px;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 3px solid var(--bg);
+  color: #fff;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+  z-index: 101;
+  transition: 0.3s;
+}
+.toggle-btn:hover { transform: scale(1.15) rotate(180deg); }
+
+/* ============ المحتوى ============ */
+.content {
+  flex: 1;
+  padding: 40px 45px;
+  overflow-y: auto;
+  max-height: 100vh;
+}
+
+.page {
+  display: none;
+  animation: fadeIn 0.4s ease;
+}
+.page.active { display: block; }
+
+@keyframes fadeIn {
+  from { opacity:0; transform: translateY(10px); }
+  to { opacity:1; transform: translateY(0); }
+}
+
+.page-title {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  background: linear-gradient(135deg, #fff, var(--accent2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.page-sub {
+  color: var(--text-dim);
+  font-size: 15px;
+  margin-bottom: 35px;
+}
+
+/* كارت الرفع */
+.upload-card {
+  background: var(--card);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 35px;
+  text-align: center;
+  transition: 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+.upload-card::before {
+  content:'';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(108,92,231,0.05), transparent);
+  pointer-events: none;
+}
+
+.upload-area {
+  border: 2px dashed var(--border);
+  border-radius: 16px;
+  padding: 50px 20px;
+  margin-bottom: 20px;
+  cursor: pointer;
+  transition: 0.3s;
+  position: relative;
+}
+.upload-area:hover {
+  border-color: var(--accent);
+  background: rgba(108,92,231,0.05);
+}
+.upload-area.dragover {
+  border-color: var(--accent2);
+  background: rgba(0,217,255,0.08);
+  transform: scale(1.01);
+}
+
+.upload-icon {
+  font-size: 56px;
+  margin-bottom: 15px;
+  display: block;
+  filter: drop-shadow(0 0 20px rgba(108,92,231,0.5));
+}
+.upload-area h3 {
+  font-size: 18px;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+.upload-area p {
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+input[type="file"] { display: none; }
+
+.file-name {
+  margin: 15px 0;
+  padding: 12px;
+  background: rgba(0,255,163,0.08);
+  border: 1px solid rgba(0,255,163,0.2);
+  border-radius: 10px;
+  color: var(--success);
+  font-size: 14px;
+  display: none;
+}
+.file-name.show { display: block; }
+
+.status-msg {
+  margin-top: 15px;
+  font-size: 14px;
+  min-height: 20px;
+  font-weight: 500;
+}
+
+/* شبكة الفيديوهات */
+.videos-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+.videos-count {
+  color: var(--text-dim);
+  font-size: 14px;
+}
+.videos-count span {
+  color: var(--accent2);
+  font-weight: 700;
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, var(--danger), #ff6b81);
+  padding: 10px 20px;
+  width: auto;
+  margin: 0;
+  font-size: 14px;
+}
+.btn-danger:hover { box-shadow: 0 10px 25px rgba(255,71,87,0.4); }
+
+.videos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.video-card {
+  background: var(--card);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 14px;
+  transition: 0.3s;
+  animation: fadeIn 0.4s ease;
+}
+.video-card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(108,92,231,0.4);
+  box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+}
+
+.video-card video {
+  width: 100%;
+  border-radius: 12px;
+  display: block;
+  background: #000;
+}
+
+.video-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+  gap: 10px;
+}
+.video-date {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.del-btn {
+  background: rgba(255,71,87,0.15);
+  color: var(--danger);
+  border: 1px solid rgba(255,71,87,0.3);
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: 0.25s;
+  width: auto;
+  margin: 0;
+}
+.del-btn:hover {
+  background: rgba(255,71,87,0.3);
+  transform: scale(1.05);
+}
+
+/* حالة فارغة */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-dim);
+}
+.empty-state .emoji {
+  font-size: 64px;
+  margin-bottom: 15px;
+  display: block;
+  opacity: 0.5;
+}
+
+/* ============ موبايل ============ */
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    top: 0; right: 0;
+    height: 100vh;
+    transform: translateX(100%);
+    width: 260px;
   }
-  .channels.open{transform:translateX(0)}
-  .friends{
-    position:fixed;top:0;bottom:0;right:0;width:min(272px,82vw);z-index:120;
-    transform:translateX(115%);transition:transform .26s cubic-bezier(.3,.9,.3,1);
-    box-shadow:-14px 0 50px rgba(0,0,0,.75);
+  .sidebar.open { transform: translateX(0); }
+  .sidebar.collapsed { width: 260px; }
+  .sidebar.collapsed .nav-text,
+  .sidebar.collapsed .logo-text { display: block; }
+  .sidebar.collapsed .nav-item { justify-content: flex-start; }
+
+  .toggle-btn { display: none; }
+
+  .mobile-menu-btn {
+    display: flex !important;
+    position: fixed;
+    top: 20px; right: 20px;
+    z-index: 200;
+    width: 46px; height: 46px;
+    border-radius: 12px;
+    background: var(--accent);
+    border: none;
+    color: #fff;
+    font-size: 22px;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 5px 20px rgba(108,92,231,0.4);
   }
-  .friends.open{transform:translateX(0)}
-  .mobile-only{display:flex!important}
-  .chatHead{padding:0 10px;gap:7px}
-  .chatHead .title{font-size:14px}
-  .adminBtn{padding:7px 10px;font-size:11.5px}
-  .messages{padding:12px 8px 6px}
-  .composer{padding:8px 10px 12px}
+
+  .content { padding: 80px 20px 30px; }
+  .page-title { font-size: 24px; }
+  .upload-card { padding: 20px; }
+  .upload-area { padding: 35px 15px; }
+
+  .overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 99;
+  }
+  .overlay.show { display: block; }
 }
-@media (max-width:400px){
-  .brand{font-size:33px}
-  .rail{width:58px;flex:0 0 58px}
-  .srv{width:40px;height:40px}
-  .channels{left:58px}
-}
+
+.mobile-menu-btn { display: none; }
 </style>
 </head>
 <body>
 
-<div class="loading-screen" id="loadingScreen">
-  <div class="spinner"></div>
-  <p id="loadingText">جارٍ الاتصال بالخادم السحابي...</p>
-  <p class="err hidden" id="loadingErr"></p>
-</div>
-
-<div class="auth-screen hidden" id="authScreen">
-  <div class="auth-card">
-    <div class="brand">iTeX</div>
-    <div class="brand-sub">COMMUNITY NETWORK</div>
-    <div class="field"><label>اسم المستخدم</label><input id="loginUser" placeholder="username" autocomplete="off"></div>
-    <div class="field"><label>كلمة المرور</label><input id="loginPass" type="password" placeholder="••••••••"></div>
-    <button class="btn-main" onclick="doLogin()">تسجيل الدخول</button>
-    <button class="btn-ghost" onclick="doRegister()">إنشاء حساب جديد</button>
-    <div class="auth-msg" id="authMsg"></div>
+<!-- ============ شاشة الدخول ============ -->
+<div id="loginScreen">
+  <div class="login-box">
+    <span class="lock-icon">🔐</span>
+    <h1>مرحباً بك</h1>
+    <p class="sub">أدخل الرمز السري للدخول</p>
+    <input type="password" id="codeInput" class="code-input" placeholder="••••••" maxlength="6" inputmode="numeric">
+    <button class="btn" onclick="checkCode()">دخول</button>
+    <p id="errorMsg" class="error-msg"></p>
   </div>
 </div>
 
-<div class="app hidden" id="appScreen">
-  <aside class="rail" id="rail"></aside>
-  <aside class="channels" id="channelsPanel"></aside>
-  <main class="chat">
-    <header class="chatHead">
-      <button class="icon-btn mobile-only" onclick="togglePanel('channels')">☰</button>
-      <div class="title" id="chatTitle"><span>iTeX</span></div>
-      <button class="icon-btn" id="collapseBtn" onclick="toggleCollapse()" title="إخفاء/إظهار الأقسام">⟨⟨</button>
-      <button class="adminBtn hidden" id="adminBtn" onclick="openAdminPanel()">لوحة التحكم</button>
-      <button class="icon-btn mobile-only" onclick="togglePanel('friends')">👥</button>
-    </header>
-    <div class="messages" id="messages"></div>
-    <div class="composer">
-      <input id="msgInput" placeholder="اكتب رسالة أو أمر (/tw ، /mute ، /ban)..." onkeydown="if(event.key==='Enter')sendMessage()">
-      <button class="sendBtn" onclick="sendMessage()">➤</button>
+<!-- ============ الموقع ============ -->
+<div id="mainScreen" style="display:none;">
+
+  <!-- زر المنيو للموبايل -->
+  <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
+  <div class="overlay" id="overlay" onclick="toggleMobileMenu()"></div>
+
+  <!-- القائمة الجانبية -->
+  <aside class="sidebar" id="sidebar">
+    <button class="toggle-btn" onclick="toggleSidebar()">‹</button>
+
+    <div class="sidebar-header">
+      <div class="logo-icon">🚀</div>
+      <div class="logo-text">My Space</div>
     </div>
+
+    <ul class="nav-list">
+      <li class="nav-item active" onclick="switchPage('upload', this)">
+        <span class="icon">📤</span>
+        <span class="nav-text">رفع فيديو</span>
+      </li>
+      <li class="nav-item" onclick="switchPage('videos', this)">
+        <span class="icon">🎬</span>
+        <span class="nav-text">الفيديوهات</span>
+      </li>
+    </ul>
+
+    <div class="sidebar-footer">
+      <button class="logout-btn" onclick="logout()">
+        <span>🚪</span>
+        <span class="nav-text">خروج</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- المحتوى -->
+  <main class="content">
+
+    <!-- الصفحة 1: رفع فيديو -->
+    <section class="page active" id="page-upload">
+      <h1 class="page-title">رفع فيديو</h1>
+      <p class="page-sub">اختر فيديو من جهازك وسيُحفظ في الذاكرة المؤقتة</p>
+
+      <div class="upload-card">
+        <label for="videoInput" class="upload-area" id="uploadArea">
+          <span class="upload-icon">🎥</span>
+          <h3>اضغط لاختيار فيديو</h3>
+          <p>أو اسحب الفيديو وأفلته هنا</p>
+        </label>
+        <input type="file" id="videoInput" accept="video/*">
+
+        <div class="file-name" id="fileName"></div>
+        <button class="btn" onclick="uploadVideo()">💾 حفظ الفيديو</button>
+        <p class="status-msg" id="statusMsg"></p>
+      </div>
+    </section>
+
+    <!-- الصفحة 2: الفيديوهات -->
+    <section class="page" id="page-videos">
+      <h1 class="page-title">الفيديوهات المحفوظة</h1>
+      <p class="page-sub">جميع الفيديوهات المخزّنة على هذا الجهاز</p>
+
+      <div class="videos-header">
+        <p class="videos-count">عدد الفيديوهات: <span id="videoCount">0</span></p>
+        <button class="btn btn-danger" onclick="clearAll()">🗑️ حذف الكل</button>
+      </div>
+
+      <div class="videos-grid" id="videoList"></div>
+    </section>
+
   </main>
-  <aside class="friends" id="friendsPanel"></aside>
 </div>
 
-<div id="toasts"></div>
-
-<!-- Firebase SDK Compat -->
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics-compat.js"></script>
-
 <script>
-/* =====================================================================
-   Firebase Init
-   ===================================================================== */
-const firebaseConfig = {
-  apiKey: "AIzaSyDJdlo9mSdINt3A4KLvpBdxXjK28LdrWB0",
-  authDomain: "policerp-a71c8.firebaseapp.com",
-  projectId: "policerp-a71c8",
-  storageBucket: "policerp-a71c8.firebasestorage.app",
-  messagingSenderId: "569720054342",
-  appId: "1:569720054342:web:858b7f239f5c35929ca047",
-  measurementId: "G-TVEYLTLBBC",
-  databaseURL: "https://policerp-a71c8-default-rtdb.firebaseio.com"
-};
+/* ===================================================
+   الإعدادات
+=================================================== */
+const SECRET_CODE = "150051";
 
 let db;
-let fbReady = false;
-try {
-  firebase.initializeApp(firebaseConfig);
-  try { firebase.analytics(); } catch(e){}
-  db = firebase.database();
-  fbReady = true;
-  console.log('🔥 Firebase initialized');
-} catch(e){
-  console.error('❌ Firebase init failed:', e);
-  document.getElementById('loadingText').textContent = 'فشل الاتصال بـ Firebase';
-  document.getElementById('loadingErr').textContent = e.message;
-  document.getElementById('loadingErr').classList.remove('hidden');
+
+/* ===================================================
+   قاعدة البيانات IndexedDB
+=================================================== */
+const request = indexedDB.open("MyVideoDB", 1);
+
+request.onupgradeneeded = (e) => {
+  db = e.target.result;
+  db.createObjectStore("videos", { autoIncrement: true, keyPath: "id" });
+};
+
+request.onsuccess = (e) => {
+  db = e.target.result;
+  loadVideos();
+};
+
+request.onerror = () => alert("❌ فشل فتح قاعدة البيانات");
+
+/* ===================================================
+   الدخول
+=================================================== */
+function checkCode() {
+  const input = document.getElementById("codeInput").value.trim();
+  const error = document.getElementById("errorMsg");
+
+  if (input === SECRET_CODE) {
+    sessionStorage.setItem("loggedIn", "true");
+    document.getElementById("loginScreen").style.display = "none";
+    document.getElementById("mainScreen").style.display = "flex";
+    loadVideos();
+  } else {
+    error.textContent = "❌ الرمز خطأ، حاول مرة أخرى";
+    document.getElementById("codeInput").value = "";
+    document.getElementById("codeInput").focus();
+  }
 }
 
-/* =====================================================================
-   Config & State
-   ===================================================================== */
-const OWNER_USER = 'i7';
-const OWNER_PASS = 'i7227711';
-const ROOT = 'itex';
+document.getElementById("codeInput").addEventListener("keypress", (e) => {
+  if (e.key === "Enter") checkCode();
+});
 
-const $ = s => document.querySelector(s);
-const $$ = s => document.querySelectorAll(s);
-const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
-const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const now = () => Date.now();
+window.addEventListener("load", () => {
+  if (sessionStorage.getItem("loggedIn") === "true") {
+    document.getElementById("loginScreen").style.display = "none";
+    document.getElementById("mainScreen").style.display = "flex";
+    loadVideos();
+  }
+  document.getElementById("codeInput").focus();
+});
 
-let DB = { users:{}, servers:{}, dms:{} };
-let ME = null;
-let state = { serverId:null, channelId:null, dmId:null, view:'server', readOnly:false, collapsed:false };
-
-/* =====================================================================
-   Firebase Sync
-   ===================================================================== */
-function ref(path){ return db.ref(ROOT + '/' + (path||'')); }
-
-/* حفظ مستخدم واحد فقط بدون المساس بالبقية */
-function saveUser(id){
-  if(!DB.users[id]) return;
-  ref('users/' + id).set(DB.users[id]).catch(e => console.error('saveUser:', e));
-}
-/* حفظ خادم واحد */
-function saveServer(id){
-  if(!DB.servers[id]) return;
-  ref('servers/' + id).set(DB.servers[id]).catch(e => console.error('saveServer:', e));
-}
-/* حفظ محادثة خاصة واحدة */
-function saveDM(id){
-  if(!DB.dms[id]) return;
-  ref('dms/' + id).set(DB.dms[id]).catch(e => console.error('saveDM:', e));
+function logout() {
+  if (!confirm("هل تريد الخروج؟")) return;
+  sessionStorage.removeItem("loggedIn");
+  location.reload();
 }
 
-/* مراقبة البيانات */
-function watch(){
-  ref('users').on('value', snap => {
-    DB.users = snap.val() || {};
-    if(ME){
-      const fresh = DB.users[ME.id];
-      if(fresh){
-        ME = fresh;
-        if(ME.banned){
-          toast('تم حظرك من الموقع');
-          setTimeout(logout, 1200);
-          return;
-        }
+/* ===================================================
+   التنقل بين الصفحات
+=================================================== */
+function switchPage(page, el) {
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
+
+  document.getElementById("page-" + page).classList.add("active");
+  el.classList.add("active");
+
+  // إغلاق القائمة في الموبايل
+  if (window.innerWidth <= 768) {
+    document.getElementById("sidebar").classList.remove("open");
+    document.getElementById("overlay").classList.remove("show");
+  }
+}
+
+/* ===================================================
+   تصغير/تكبير القائمة + الموبايل
+=================================================== */
+function toggleSidebar() {
+  document.getElementById("sidebar").classList.toggle("collapsed");
+}
+
+function toggleMobileMenu() {
+  document.getElementById("sidebar").classList.toggle("open");
+  document.getElementById("overlay").classList.toggle("show");
+}
+
+/* ===================================================
+   اختيار الفيديو + السحب والإفلات
+=================================================== */
+const fileInput = document.getElementById("videoInput");
+const uploadArea = document.getElementById("uploadArea");
+const fileNameEl = document.getElementById("fileName");
+
+fileInput.addEventListener("change", () => {
+  const file = fileInput.files[0];
+  if (file) {
+    fileNameEl.textContent = "📁 " + file.name + " • " + (file.size / 1024 / 1024).toFixed(2) + " MB";
+    fileNameEl.classList.add("show");
+  }
+});
+
+["dragover", "dragenter"].forEach(ev => {
+  uploadArea.addEventListener(ev, (e) => {
+    e.preventDefault();
+    uploadArea.classList.add("dragover");
+  });
+});
+["dragleave", "drop"].forEach(ev => {
+  uploadArea.addEventListener(ev, (e) => {
+    e.preventDefault();
+    uploadArea.classList.remove("dragover");
+  });
+});
+uploadArea.addEventListener("drop", (e) => {
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith("video/")) {
+    fileInput.files = e.dataTransfer.files;
+    fileNameEl.textContent = "📁 " + file.name + " • " + (file.size / 1024 / 1024).toFixed(2) + " MB";
+    fileNameEl.classList.add("show");
+  }
+});
+
+/* ===================================================
+   رفع الفيديو
+=================================================== */
+function uploadVideo() {
+  const file = fileInput.files[0];
+  const status = document.getElementById("statusMsg");
+
+  if (!file) {
+    status.textContent = "⚠️ اختر فيديو أولاً";
+    status.style.color = "#fbbf24";
+    return;
+  }
+
+  if (!file.type.startsWith("video/")) {
+    status.textContent = "⚠️ الملف ليس فيديو";
+    status.style.color = "#fbbf24";
+    return;
+  }
+
+  status.textContent = "⏳ جاري الحفظ...";
+  status.style.color = "#60a5fa";
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    const tx = db.transaction("videos", "readwrite");
+    const store = tx.objectStore("videos");
+    store.add({
+      data: reader.result,
+      name: file.name,
+      date: new Date().toLocaleString("ar-EG")
+    });
+
+    tx.oncomplete = () => {
+      status.textContent = "✅ تم حفظ الفيديو بنجاح";
+      status.style.color = "#00ffa3";
+      fileInput.value = "";
+      fileNameEl.classList.remove("show");
+      fileNameEl.textContent = "";
+      loadVideos();
+      setTimeout(() => status.textContent = "", 3000);
+    };
+
+    tx.onerror = () => {
+      status.textContent = "❌ فشل الحفظ (الفيديو كبير جداً؟)";
+      status.style.color = "#ff4757";
+    };
+  };
+  reader.readAsDataURL(file);
+}
+
+/* ===================================================
+   عرض الفيديوهات
+=================================================== */
+function loadVideos() {
+  if (!db) return;
+  const list = document.getElementById("videoList");
+  list.innerHTML = "";
+  let count = 0;
+
+  const tx = db.transaction("videos", "readonly");
+  const store = tx.objectStore("videos");
+  const req = store.openCursor();
+
+  req.onsuccess = (e) => {
+    const cursor = e.target.result;
+    if (cursor) {
+      const item = cursor.value;
+      count++;
+
+      const card = document.createElement("div");
+      card.className = "video-card";
+      card.innerHTML = `
+        <video src="${item.data}" controls preload="metadata"></video>
+        <div class="video-info">
+          <span class="video-date">${item.date}</span>
+          <button class="del-btn" onclick="deleteVideo(${item.id})">🗑️</button>
+        </div>
+      `;
+      list.appendChild(card);
+      cursor.continue();
+    } else {
+      document.getElementById("videoCount").textContent = count;
+      if (count === 0) {
+        list.innerHTML = `
+          <div class="empty-state" style="grid-column:1/-1;">
+            <span class="emoji">📭</span>
+            <p>لا توجد فيديوهات محفوظة بعد</p>
+          </div>
+        `;
       }
     }
-    if(typeof renderAll === 'function') renderAll();
-  }, err => console.error('users read error:', err));
-
-  ref('servers').on('value', snap => {
-    DB.servers = snap.val() || {};
-    // تهيئة الخوادم الأساسية بعد أول قراءة
-    setTimeout(ensureBase, 100);
-    if(typeof renderAll === 'function') renderAll();
-  }, err => console.error('servers read error:', err));
-
-  ref('dms').on('value', snap => {
-    DB.dms = snap.val() || {};
-    if(typeof renderAll === 'function') renderAll();
-  }, err => console.error('dms read error:', err));
-}
-
-/* إنشاء الخوادم الأساسية فقط إذا لم تكن موجودة */
-function ensureBase(){
-  let changed = false;
-
-  // حساب الأونر
-  let owner = Object.values(DB.users).find(u => u.username === OWNER_USER);
-  if(!owner){
-    const oid = 'u_owner';
-    DB.users[oid] = {
-      id:oid, username:OWNER_USER, password:OWNER_PASS, display:'i7', avatar:'',
-      isOwner:true, star:true, banned:false, mute:false, timeout:0,
-      friends:[], incoming:[], outgoing:[]
-    };
-    ref('users/' + oid).set(DB.users[oid]);
-    changed = true;
-  } else {
-    if(!owner.isOwner || !owner.star){
-      owner.isOwner = true; owner.star = true;
-      ref('users/' + owner.id).update({isOwner:true, star:true});
-    }
-  }
-
-  // الخادم الأساسي
-  if(!DB.servers['s_main']){
-    DB.servers['s_main'] = {
-      id:'s_main', name:'iTeX العام', icon:'', ownerId:'u_owner',
-      isPrivate:false, members:['u_owner'], adminIds:[], blocked:[], roles:[],
-      categories:[
-        { id:'cat_a', name:'نظام الإدارة', channels:[
-          { id:'ch_law',   name:'القوانين',  adminOnly:false, roles:[], messages:[] },
-          { id:'ch_intro', name:'التعريف',   adminOnly:false, roles:[], messages:[] }
-        ]},
-        { id:'cat_b', name:'الدرجة العامة', channels:[
-          { id:'ch_gen', name:'الشات العام', adminOnly:false, roles:[], messages:[] }
-        ]},
-        { id:'cat_c', name:'خاص بالإدارة', channels:[
-          { id:'ch_ops', name:'غرفة العمليات', adminOnly:true, roles:[], messages:[] }
-        ]}
-      ]
-    };
-    ref('servers/s_main').set(DB.servers['s_main']);
-    changed = true;
-  }
-
-  // خادم الأونر الخاص
-  if(!DB.servers['s_owner']){
-    DB.servers['s_owner'] = {
-      id:'s_owner', name:'خادم الأونر', icon:'', ownerId:'u_owner',
-      isPrivate:true, members:['u_owner'], adminIds:[], blocked:[], roles:[],
-      categories:[
-        { id:'ocat_1', name:'التعليمات', channels:[
-          { id:'och_info', name:'تعليمات الأونر', adminOnly:false, roles:[], messages:[
-            { id:uid(), uid:'u_owner', text:'مرحبًا بك في خادم الأونر.', ts:now(), sys:true }
-          ]}
-        ]},
-        { id:'ocat_2', name:'الأونر', channels:[
-          { id:'och_logs', name:'لوقات الموقع', adminOnly:false, roles:[], messages:[
-            { id:uid(), uid:'u_owner', text:'سجل العمليات يعمل الآن ✔', ts:now(), sys:true }
-          ]}
-        ]}
-      ]
-    };
-    ref('servers/s_owner').set(DB.servers['s_owner']);
-    changed = true;
-  }
-
-  if(changed) console.log('🌱 Base servers created');
-}
-
-/* =====================================================================
-   Helpers
-   ===================================================================== */
-function userById(id){ return DB.users ? DB.users[id] : null; }
-function serverById(id){ return DB.servers ? DB.servers[id] : null; }
-function currentServer(){ return serverById(state.serverId); }
-function currentChannel(){
-  const s = currentServer(); if(!s || !s.categories) return null;
-  for(const c of s.categories) for(const ch of (c.channels||[])) if(ch.id === state.channelId) return ch;
-  return null;
-}
-function isServerAdmin(s, u){
-  if(!s || !u) return false;
-  if(u.isOwner) return true;
-  if(s.ownerId === u.id) return true;
-  if((s.adminIds||[]).includes(u.id)) return true;
-  return false;
-}
-function userRoles(s, u){
-  if(!s || !u) return [];
-  return (s.roles||[]).filter(r => (r.members||[]).includes(u.id)).map(r => r.id);
-}
-function canSeeChannel(s, ch, u){
-  if(!u) return false;
-  if(isServerAdmin(s, u)) return true;
-  if(ch.adminOnly) return false;
-  if(ch.roles && ch.roles.length){
-    const mine = userRoles(s, u);
-    return ch.roles.some(r => mine.includes(r));
-  }
-  return true;
-}
-function canSeeServer(s, u){
-  if(!u) return false;
-  if(u.isOwner) return true;
-  if((s.blocked||[]).includes(u.id)) return false;
-  if(s.isPrivate && !(s.members||[]).includes(u.id)) return false;
-  return true;
-}
-function avatarHTML(u, size = 34){
-  if(!u) return `<div class="av avTxt" style="width:${size}px;height:${size}px;font-size:${size*0.4}px">?</div>`;
-  if(u.avatar) return `<img class="av" style="width:${size}px;height:${size}px" src="${u.avatar}" alt="">`;
-  return `<div class="av avTxt" style="width:${size}px;height:${size}px;font-size:${size*0.4}px">${esc((u.display||u.username||'?').slice(0,2))}</div>`;
-}
-function fmtTime(ts){ return new Date(ts).toLocaleTimeString('ar-EG', { hour:'2-digit', minute:'2-digit' }); }
-function toast(msg, ok){
-  const t = document.createElement('div');
-  t.className = 'toast' + (ok ? ' ok' : '');
-  t.textContent = msg;
-  $('#toasts').appendChild(t);
-  setTimeout(() => { t.style.opacity = '0'; t.style.transition = '.3s'; setTimeout(() => t.remove(), 320); }, 2400);
-}
-function openModal(html){
-  const w = document.createElement('div');
-  w.className = 'overlay';
-  w.innerHTML = `<div class="modal">${html}</div>`;
-  w.addEventListener('mousedown', e => { if(e.target === w) w.remove(); });
-  document.body.appendChild(w);
-  return w;
-}
-function closeModal(){ const all = $$('.overlay'); if(all.length) all[all.length-1].remove(); }
-function isMuted(u){ return u.mute || (u.timeout && u.timeout > now()); }
-
-/* =====================================================================
-   Auth
-   ===================================================================== */
-function doLogin(){
-  const un = $('#loginUser').value.trim();
-  const pw = $('#loginPass').value;
-  const msg = $('#authMsg');
-  if(!un || !pw){ msg.className = 'auth-msg'; msg.textContent = 'أدخل اسم المستخدم وكلمة المرور'; return; }
-  const u = Object.values(DB.users || {}).find(x => x.username.toLowerCase() === un.toLowerCase());
-  if(!u || u.password !== pw){ msg.className = 'auth-msg'; msg.textContent = 'بيانات الدخول غير صحيحة'; return; }
-  if(u.banned){ msg.className = 'auth-msg'; msg.textContent = 'هذا الحساب محظور من الموقع'; return; }
-  try { localStorage.setItem('itex_session', u.id); } catch(e){}
-  enterApp(u);
-}
-
-function doRegister(){
-  openModal(`
-    <h3>إنشاء حساب جديد</h3>
-    <div class="row"><label>اسم المستخدم (بالإنجليزي)</label><input id="regU" placeholder="username"></div>
-    <div class="row"><label>الاسم الظاهر</label><input id="regD" placeholder="الاسم الذي يظهر للآخرين"></div>
-    <div class="row"><label>كلمة المرور</label><input id="regP" type="password" placeholder="••••••••"></div>
-    <div class="modal-actions">
-      <button class="mOk" onclick="submitRegister()">إنشاء</button>
-      <button class="mNo" onclick="closeModal()">إلغاء</button>
-    </div>
-  `);
-}
-
-function submitRegister(){
-  const un = $('#regU').value.trim();
-  const dn = $('#regD').value.trim() || un;
-  const pw = $('#regP').value;
-  if(!/^[A-Za-z0-9_.]{3,16}$/.test(un)){ toast('اسم المستخدم: 3-16 حرف إنجليزي/رقم'); return; }
-  if(pw.length < 4){ toast('كلمة المرور قصيرة جدًا'); return; }
-  if(Object.values(DB.users||{}).some(u => u.username.toLowerCase() === un.toLowerCase())){ toast('اسم المستخدم مستخدم بالفعل'); return; }
-  const id = uid();
-  const u = { id, username:un, password:pw, display:dn, avatar:'',
-              isOwner:false, star:false, banned:false, mute:false, timeout:0,
-              friends:[], incoming:[], outgoing:[] };
-  ref('users/' + id).set(u)
-    .then(() => { DB.users[id] = u; toast('تم إنشاء الحساب ✔ يمكنك الدخول الآن', true); })
-    .catch(e => { console.error(e); toast('فشل الحفظ: ' + e.message); });
-  logAction(null, `تم إنشاء حساب جديد: ${un}`, null);
-  closeModal();
-}
-
-function logout(){
-  try { localStorage.removeItem('itex_session'); } catch(e){}
-  ME = null;
-  $('#appScreen').classList.add('hidden');
-  $('#authScreen').classList.remove('hidden');
-  $('#loginPass').value = '';
-}
-
-function enterApp(u){
-  ME = u;
-  $('#authScreen').classList.add('hidden');
-  $('#appScreen').classList.remove('hidden');
-  $('#adminBtn').classList.toggle('hidden', !ME.isOwner);
-
-  const vis = Object.values(DB.servers||{}).filter(s => canSeeServer(s, ME));
-  if(!vis.find(s => s.id === state.serverId)){
-    state.serverId = vis.length ? vis[0].id : null;
-    state.channelId = null;
-    state.view = 'server';
-  }
-  if(state.serverId) pickFirstChannel(state.serverId);
-  renderAll();
-}
-
-/* =====================================================================
-   Logging
-   ===================================================================== */
-function logAction(actor, text){
-  const line = `[${new Date().toLocaleString('ar-EG')}] ${actor ? '@'+actor.username : 'النظام'} — ${text}`;
-  const s = DB.servers['s_owner'];
-  if(!s || !s.categories) return;
-  let logCh = null;
-  for(const c of s.categories){
-    for(const ch of (c.channels||[])){
-      if(ch.id === 'och_logs'){ logCh = ch; break; }
-    }
-  }
-  if(!logCh) return;
-  if(!logCh.messages) logCh.messages = [];
-  logCh.messages.push({ id:uid(), uid:'u_owner', text:line, ts:now(), sys:true });
-  if(logCh.messages.length > 300) logCh.messages.splice(0, logCh.messages.length - 300);
-  saveServer('s_owner');
-}
-
-/* =====================================================================
-   Render
-   ===================================================================== */
-function renderAll(){
-  if(!ME) return;
-  renderRail();
-  renderChannels();
-  renderChat();
-  renderFriends();
-  const a = $('#adminBtn'); if(a) a.classList.toggle('hidden', !ME.isOwner);
-}
-
-function renderRail(){
-  const rail = $('#rail');
-  rail.innerHTML = '';
-  const list = Object.values(DB.servers||{}).filter(s => canSeeServer(s, ME));
-  list.forEach(s => {
-    const b = document.createElement('button');
-    b.className = 'srv' + (state.view === 'server' && state.serverId === s.id ? ' active' : '');
-    b.title = s.name;
-    if(s.icon) b.innerHTML = `<img src="${s.icon}" alt="">`;
-    else b.textContent = (s.name || '?').replace(/\s/g,'').slice(0,2);
-    b.onclick = () => { openServer(s.id); closePanels(); };
-    rail.appendChild(b);
-  });
-  const sep = document.createElement('div'); sep.className = 'rail-sep'; rail.appendChild(sep);
-  const add = document.createElement('button');
-  add.className = 'srv add'; add.textContent = '+'; add.title = 'إنشاء خادم';
-  add.onclick = openCreateServer;
-  rail.appendChild(add);
-}
-
-function renderChannels(){
-  const p = $('#channelsPanel');
-  const s = currentServer();
-  if(!s){ p.innerHTML = ''; return; }
-  const admin = isServerAdmin(s, ME);
-  let h = `
-    <div class="srvHead">
-      <div style="min-width:0">
-        <div class="name">${esc(s.name)}</div>
-        <div class="sub">${admin ? 'ADMINISTRATOR' : 'MEMBER'}</div>
-      </div>
-      ${admin ? `<button class="icon-btn" onclick="openServerSettings()" title="إعدادات الخادم">⚙</button>` : ''}
-    </div>
-    <div class="catList">`;
-
-  (s.categories||[]).forEach(cat => {
-    const chans = (cat.channels||[]).filter(ch => canSeeChannel(s, ch, ME));
-    if(!chans.length && !admin) return;
-    h += `<div class="cat"><div class="catName"><span>${esc(cat.name)}</span>${
-      admin ? `<button onclick="addChannel('${cat.id}')" title="إضافة روم">+</button>` : ''
-    }</div>`;
-    chans.forEach(ch => {
-      const active = state.view === 'server' && state.channelId === ch.id;
-      h += `<div class="chan ${active ? 'active' : ''}" onclick="openChannel('${ch.id}')">
-              <span>#</span><span>${esc(ch.name)}</span>${ch.adminOnly ? '<span class="lock">🔒</span>' : ''}
-            </div>`;
-    });
-    if(!chans.length && admin) h += `<div class="empty">لا توجد رومات</div>`;
-    h += `</div>`;
-  });
-
-  if(admin) h += `<button class="addBtn" onclick="addCategory()">+ إضافة كاتجوري</button>`;
-  h += `</div>`;
-  h += userBarHTML();
-  p.innerHTML = h;
-}
-
-function userBarHTML(){
-  const role = ME.isOwner ? 'OWNER' : 'MEMBER';
-  return `
-    <div class="userBar">
-      ${avatarHTML(ME, 36)}
-      <div class="info">
-        <div class="uname">${esc(ME.display)} ${ME.star ? '⭐' : ''}</div>
-        <div class="urole">${role}</div>
-      </div>
-      <button class="icon-btn" onclick="openProfileEditor()" title="تعديل الحساب">✎</button>
-      <button class="icon-btn" onclick="logout()" title="خروج">⏻</button>
-    </div>`;
-}
-
-function renderChat(){
-  const box = $('#messages');
-  const title = $('#chatTitle');
-  const input = $('#msgInput');
-  box.innerHTML = '';
-
-  if(state.view === 'dm'){
-    const dm = DB.dms[state.dmId];
-    if(!dm){ box.innerHTML = `<div class="welcome"><div class="big">iTeX</div><div>اختر محادثة</div></div>`; title.innerHTML = '<span>الرسائل الخاصة</span>'; return; }
-    const otherId = (dm.users||[]).find(i => i !== ME.id);
-    const other = userById(otherId) || ME;
-    title.innerHTML = `<span>💬 ${esc(other.display)} ${other.star ? '⭐' : ''}</span>
-      <span class="sub">${state.readOnly ? 'عرض فقط (أونر)' : 'محادثة خاصة'}</span>`;
-    if(!(dm.messages||[]).length){
-      box.innerHTML = `<div class="welcome"><div class="big">بداية المحادثة</div><div>أرسل أول رسالة إلى ${esc(other.display)}</div></div>`;
-    } else {
-      dm.messages.forEach(m => box.appendChild(msgEl(m)));
-    }
-    input.disabled = !!state.readOnly;
-    input.placeholder = state.readOnly ? 'لا يمكنك الكتابة في محادثة الآخرين' : 'اكتب رسالة خاصة...';
-    box.scrollTop = box.scrollHeight;
-    return;
-  }
-
-  const s = currentServer();
-  const ch = currentChannel();
-  if(!s || !ch){
-    title.innerHTML = '<span>iTeX</span>';
-    box.innerHTML = `<div class="welcome"><div class="big">iTeX Community</div><div>اختر خادمًا ورومًا للبدء</div></div>`;
-    input.disabled = true; input.placeholder = '...';
-    return;
-  }
-  title.innerHTML = `<span># ${esc(ch.name)}</span><span class="sub">${esc(s.name)}</span>`;
-  input.disabled = false;
-  input.placeholder = 'اكتب رسالة أو أمر (/tw ، /mute ، /ban)...';
-
-  if(!(ch.messages||[]).length){
-    box.innerHTML = `<div class="welcome"><div class="big"># ${esc(ch.name)}</div><div>لا توجد رسائل بعد — كن أول من يكتب!</div></div>`;
-  } else {
-    ch.messages.forEach(m => box.appendChild(msgEl(m)));
-  }
-  box.scrollTop = box.scrollHeight;
-}
-
-function msgEl(m){
-  const u = userById(m.uid);
-  const d = document.createElement('div');
-  d.className = 'msg' + (m.sys ? ' sys' : '');
-  if(m.sys){
-    d.innerHTML = `<div class="body"><div class="txt">${esc(m.text)}</div></div>`;
-    return d;
-  }
-  d.innerHTML = `
-    ${avatarHTML(u, 38)}
-    <div class="body">
-      <div class="top">
-        <span class="who" style="color:${u && u.isOwner ? 'var(--accent2)' : '#fff'}">${esc(u ? u.display : 'مجهول')}</span>
-        ${u && u.star ? '<span title="موثّق">⭐</span>' : ''}
-        ${u && u.isOwner ? '<span style="font-size:9px;background:var(--accent);padding:2px 7px;border-radius:20px;font-weight:700">OWNER</span>' : ''}
-        <span class="time">${fmtTime(m.ts)}</span>
-      </div>
-      <div class="txt">${esc(m.text)}</div>
-    </div>`;
-  return d;
-}
-
-function renderFriends(){
-  const p = $('#friendsPanel');
-  let h = `<div class="fHead">الأشخاص</div><div class="fBody">`;
-
-  h += `<div class="addFriend">
-          <input id="friendInput" placeholder="اسم المستخدم..." onkeydown="if(event.key==='Enter')sendFriendRequest()">
-          <button onclick="sendFriendRequest()">إضافة</button>
-        </div>`;
-
-  const incoming = (ME.incoming || []).map(userById).filter(Boolean);
-  if(incoming.length){
-    h += `<div class="fSection">الطلبات الواردة</div>`;
-    incoming.forEach(u => {
-      h += `<div class="fRow">
-              ${avatarHTML(u, 30)}
-              <div class="fName">${esc(u.display)}</div>
-              <button class="mini ok" onclick="acceptRequest('${u.id}')">قبول</button>
-              <button class="mini no" onclick="rejectRequest('${u.id}')">رفض</button>
-            </div>`;
-    });
-  }
-
-  const outgoing = (ME.outgoing || []).map(userById).filter(Boolean);
-  if(outgoing.length){
-    h += `<div class="fSection">طلبات مرسلة</div>`;
-    outgoing.forEach(u => {
-      h += `<div class="fRow">${avatarHTML(u,30)}<div class="fName">${esc(u.display)}</div><span style="font-size:10px;color:var(--muted)">بانتظار القبول</span></div>`;
-    });
-  }
-
-  h += `<div class="fSection">الأصدقاء (${(ME.friends||[]).length})</div>`;
-  const friends = (ME.friends || []).map(userById).filter(Boolean);
-  if(!friends.length) h += `<div class="empty">لا يوجد أصدقاء بعد</div>`;
-  friends.forEach(u => {
-    const dm = findDM(ME.id, u.id);
-    const active = state.view === 'dm' && dm && state.dmId === dm.id;
-    h += `<div class="fRow ${active ? 'active' : ''}" onclick="openDMWith('${u.id}')">
-            ${avatarHTML(u, 30)}
-            <div class="fName">${esc(u.display)} ${u.star ? '⭐' : ''}</div>
-            <span class="dot"></span>
-          </div>`;
-  });
-
-  if(ME.isOwner){
-    h += `<div class="fSection">🛡️ كل الأعضاء (${Object.keys(DB.users).length})</div>`;
-    Object.values(DB.users).forEach(u => {
-      h += `<div class="fRow" onclick="openUserInfo('${u.id}')">
-              ${avatarHTML(u, 30)}
-              <div class="fName">${esc(u.display)} ${u.star ? '⭐' : ''}</div>
-              <span style="font-size:9px;color:var(--muted)">${u.isOwner ? 'OWNER' : (u.banned ? 'محظور' : (isMuted(u) ? 'مكتوم' : ''))}</span>
-            </div>`;
-    });
-
-    h += `<div class="fSection">👁️ كل المحادثات (${Object.keys(DB.dms).length})</div>`;
-    if(!Object.keys(DB.dms).length) h += `<div class="empty">لا توجد محادثات</div>`;
-    Object.values(DB.dms).forEach(d => {
-      const a = userById(d.users[0]), b = userById(d.users[1]);
-      if(!a || !b) return;
-      const active = state.view === 'dm' && state.dmId === d.id;
-      h += `<div class="fRow ${active ? 'active' : ''}" onclick="openDMOwner('${d.id}')">
-              ${avatarHTML(a, 26)}${avatarHTML(b, 26)}
-              <div class="fName" style="font-size:12px">${esc(a.display)} ↔ ${esc(b.display)}</div>
-            </div>`;
-    });
-  }
-
-  h += `</div>`;
-  p.innerHTML = h;
-}
-
-/* =====================================================================
-   Navigation
-   ===================================================================== */
-function pickFirstChannel(sid){
-  const s = serverById(sid); if(!s || !s.categories) return;
-  for(const c of s.categories){
-    const ch = (c.channels||[]).find(x => canSeeChannel(s, x, ME));
-    if(ch){ state.channelId = ch.id; return; }
-  }
-  state.channelId = null;
-}
-function openServer(id){
-  state.view = 'server'; state.dmId = null; state.readOnly = false;
-  state.serverId = id;
-  pickFirstChannel(id);
-  renderAll();
-}
-function openChannel(id){
-  state.view = 'server'; state.dmId = null; state.readOnly = false;
-  state.channelId = id;
-  renderAll(); closePanels();
-}
-function findDM(a, b){
-  return Object.values(DB.dms||{}).find(d => (d.users||[]).includes(a) && (d.users||[]).includes(b));
-}
-function openDMWith(userId){
-  let dm = findDM(ME.id, userId);
-  if(!dm){
-    const id = uid();
-    dm = { id, users:[ME.id, userId], messages:[] };
-    DB.dms[id] = dm;
-    ref('dms/' + id).set(dm);
-  }
-  state.view = 'dm'; state.dmId = dm.id; state.readOnly = false;
-  renderAll(); closePanels();
-}
-function openDMOwner(dmId){
-  state.view = 'dm'; state.dmId = dmId;
-  const dm = DB.dms[dmId];
-  state.readOnly = !(dm && (dm.users||[]).includes(ME.id));
-  renderAll(); closePanels();
-}
-function openUserInfo(userId){
-  const u = userById(userId); if(!u) return;
-  openModal(`
-    <h3>معلومات العضو ${u.star ? '⭐' : ''}</h3>
-    <div style="display:flex;gap:14px;align-items:center;margin-bottom:16px">
-      ${avatarHTML(u, 60)}
-      <div>
-        <div style="font-weight:800;font-size:17px">${esc(u.display)}</div>
-        <div style="color:var(--muted);font-size:12px">@${esc(u.username)}</div>
-        <div style="font-size:11px;margin-top:5px;color:var(--accent2)">
-          ${u.isOwner ? 'OWNER' : ''}${u.banned ? ' • محظور' : ''}${isMuted(u) ? ' • مكتوم' : ''}
-        </div>
-      </div>
-    </div>
-    <div class="modal-actions"><button class="mNo" onclick="closeModal()">إغلاق</button></div>
-  `);
-}
-
-function togglePanel(which){
-  const el = which === 'channels' ? $('#channelsPanel') : $('#friendsPanel');
-  const other = which === 'channels' ? $('#friendsPanel') : $('#channelsPanel');
-  other.classList.remove('open');
-  el.classList.toggle('open');
-}
-function closePanels(){
-  $('#channelsPanel').classList.remove('open');
-  $('#friendsPanel').classList.remove('open');
-}
-function toggleCollapse(){
-  state.collapsed = !state.collapsed;
-  const cp = $('#channelsPanel'), fp = $('#friendsPanel');
-  if(state.collapsed){
-    cp.style.display = 'none'; fp.style.display = 'none';
-    $('#collapseBtn').textContent = '⟩⟩';
-  } else {
-    cp.style.display = ''; fp.style.display = '';
-    $('#collapseBtn').textContent = '⟨⟨';
-  }
-}
-
-/* =====================================================================
-   Messaging
-   ===================================================================== */
-function sendMessage(){
-  const input = $('#msgInput');
-  const text = input.value.trim();
-  if(!text) return;
-  if(ME.banned){ toast('أنت محظور من الموقع'); return; }
-  if(ME.timeout && ME.timeout > now()){
-    const m = Math.ceil((ME.timeout - now()) / 60000);
-    toast(`أنت في تايم أوت — متبقٍ ${m} دقيقة`); return;
-  }
-  if(ME.mute){ toast('أنت مكتوم ولا تستطيع الكتابة'); return; }
-
-  if(text.startsWith('/')){
-    if(handleCommand(text)){ input.value = ''; return; }
-  }
-
-  if(state.view === 'dm'){
-    const dm = DB.dms[state.dmId];
-    if(!dm || state.readOnly) return;
-    if(!dm.messages) dm.messages = [];
-    dm.messages.push({ id:uid(), uid:ME.id, text, ts:now() });
-    if(dm.messages.length > 500) dm.messages.splice(0, dm.messages.length - 500);
-    saveDM(dm.id);
-  } else {
-    const s = currentServer();
-    const ch = currentChannel();
-    if(!s || !ch) return;
-    if(!ch.messages) ch.messages = [];
-    ch.messages.push({ id:uid(), uid:ME.id, text, ts:now() });
-    if(ch.messages.length > 500) ch.messages.splice(0, ch.messages.length - 500);
-    // تحديث موضعي — لا نكتب الخادم كامل
-    ref('servers/' + s.id + '/categories').set(s.categories)
-      .catch(e => console.error('msg save:', e));
-  }
-  input.value = '';
-  renderChat();
-}
-
-function handleCommand(text){
-  const parts = text.slice(1).split(/\s+/);
-  const cmd = parts[0].toLowerCase();
-  const s = currentServer();
-  const isAdmin = s && isServerAdmin(s, ME);
-  if(!['ban','mute','tw','timeout','unban','unmute'].includes(cmd)) return false;
-  if(!isAdmin){ toast('هذا الأمر للإدارة فقط'); return true; }
-
-  const targetName = parts[1];
-  const target = Object.values(DB.users).find(u => u.username.toLowerCase() === (targetName||'').toLowerCase());
-  if(!target){ toast('لم يتم العثور على العضو'); return true; }
-  if(target.isOwner){ toast('لا يمكن تنفيذ الأمر على الأونر'); return true; }
-
-  if(cmd === 'ban'){ target.banned = true; logAction(ME, `حظر العضو @${target.username}`); toast('تم حظر العضو', true); }
-  if(cmd === 'unban'){ target.banned = false; logAction(ME, `فك الحظر عن @${target.username}`); toast('تم فك الحظر', true); }
-  if(cmd === 'mute'){ target.mute = true; logAction(ME, `كتم العضو @${target.username}`); toast('تم الكتم', true); }
-  if(cmd === 'unmute'){ target.mute = false; logAction(ME, `فك الكتم عن @${target.username}`); toast('تم فك الكتم', true); }
-  if(cmd === 'tw' || cmd === 'timeout'){
-    const mins = parseInt(parts[2]) || 10;
-    target.timeout = now() + mins * 60000;
-    logAction(ME, `تايم أوت ${mins} دقيقة للعضو @${target.username}`);
-    toast(`تم إعطاء تايم أوت ${mins} دقيقة`, true);
-  }
-  DB.users[target.id] = target;
-  saveUser(target.id);
-  renderAll();
-  return true;
-}
-
-/* =====================================================================
-   Friends
-   ===================================================================== */
-function sendFriendRequest(){
-  const inp = $('#friendInput'); if(!inp) return;
-  const name = inp.value.trim();
-  if(!name) return;
-  const u = Object.values(DB.users).find(x => x.username.toLowerCase() === name.toLowerCase());
-  if(!u){ toast('لا يوجد عضو بهذا الاسم'); return; }
-  if(u.id === ME.id){ toast('لا يمكنك إضافة نفسك'); return; }
-  if((ME.friends||[]).includes(u.id)){ toast('هذا العضو صديقك بالفعل'); return; }
-  if((ME.outgoing||[]).includes(u.id)){ toast('الطلب مرسل مسبقًا'); return; }
-  ME.outgoing = ME.outgoing || []; u.incoming = u.incoming || [];
-  ME.outgoing.push(u.id);
-  u.incoming.push(ME.id);
-  DB.users[ME.id] = ME; DB.users[u.id] = u;
-  saveUser(ME.id); saveUser(u.id);
-  logAction(ME, `أرسل طلب صداقة إلى @${u.username}`);
-  inp.value = '';
-  renderFriends();
-  toast('تم إرسال طلب الصداقة ✔', true);
-}
-function acceptRequest(userId){
-  const u = userById(userId); if(!u) return;
-  ME.incoming = (ME.incoming||[]).filter(i => i !== userId);
-  u.outgoing = (u.outgoing||[]).filter(i => i !== ME.id);
-  ME.friends = ME.friends || []; u.friends = u.friends || [];
-  if(!ME.friends.includes(userId)) ME.friends.push(userId);
-  if(!u.friends.includes(ME.id)) u.friends.push(ME.id);
-  DB.users[ME.id] = ME; DB.users[u.id] = u;
-  saveUser(ME.id); saveUser(u.id);
-
-  if(!findDM(ME.id, userId)){
-    const id = uid();
-    const dm = { id, users:[ME.id, userId], messages:[] };
-    DB.dms[id] = dm;
-    ref('dms/' + id).set(dm);
-  }
-  logAction(ME, `قبل طلب الصداقة من @${u.username}`);
-  renderAll();
-  toast('تمت الإضافة ✔ يمكنكما التحدث الآن', true);
-}
-function rejectRequest(userId){
-  const u = userById(userId); if(!u) return;
-  ME.incoming = (ME.incoming||[]).filter(i => i !== userId);
-  u.outgoing = (u.outgoing||[]).filter(i => i !== ME.id);
-  DB.users[ME.id] = ME; DB.users[u.id] = u;
-  saveUser(ME.id); saveUser(u.id);
-  renderFriends();
-  toast('تم رفض الطلب');
-}
-
-/* =====================================================================
-   Server creation
-   ===================================================================== */
-function openCreateServer(){
-  openModal(`
-    <h3>إنشاء خادم جديد <span class="tag">+</span></h3>
-    <div class="hint">اختر اسمًا وصورة للخادم. ستحصل على كامل الصلاحيات داخل خادمك.</div>
-    <div class="row"><label>اسم الخادم</label><input id="newSrvName" placeholder="مثال: خادم الأصدقاء"></div>
-    <div class="row"><label>صورة الخادم (من الألبوم)</label><input id="newSrvIcon" type="file" accept="image/*"></div>
-    <div class="modal-actions">
-      <button class="mOk" onclick="createServer()">إنشاء الخادم</button>
-      <button class="mNo" onclick="closeModal()">إلغاء</button>
-    </div>
-  `);
-}
-
-function createServer(){
-  const name = $('#newSrvName').value.trim();
-  const file = $('#newSrvIcon').files[0];
-  if(!name){ toast('اكتب اسم الخادم'); return; }
-
-  const finish = icon => {
-    const id = uid();
-    const s = {
-      id, name, icon: icon || '', ownerId: ME.id,
-      isPrivate:false, members:[ME.id], adminIds:[], blocked:[], roles:[],
-      categories:[
-        { id:uid(), name:'الدرجة العامة', channels:[
-          { id:uid(), name:'الشات العام', adminOnly:false, roles:[], messages:[] }
-        ]}
-      ]
-    };
-    DB.servers[id] = s;
-    ref('servers/' + id).set(s)
-      .then(() => {
-        logAction(ME, `أنشأ خادمًا جديدًا: ${name}`);
-        closeModal();
-        state.view = 'server'; state.serverId = id; state.channelId = s.categories[0].channels[0].id;
-        renderAll();
-        toast('تم إنشاء الخادم ✔', true);
-      })
-      .catch(e => { console.error(e); toast('فشل: ' + e.message); });
   };
-
-  if(file){
-    const r = new FileReader();
-    r.onload = e => finish(e.target.result);
-    r.readAsDataURL(file);
-  } else finish('');
 }
 
-/* =====================================================================
-   Server settings
-   ===================================================================== */
-function openServerSettings(){
-  const s = currentServer(); if(!s) return;
-  if(!isServerAdmin(s, ME)) return;
-
-  openModal(`
-    <h3>إعدادات الخادم <span class="tag">${esc(s.name)}</span></h3>
-    <div class="row"><label>اسم الخادم</label><input id="ssName" value="${esc(s.name)}"></div>
-    <div class="row"><label>صورة الخادم</label><input id="ssIcon" type="file" accept="image/*"></div>
-    <label class="chk"><input type="checkbox" id="ssPrivate" ${s.isPrivate?'checked':''}> خادم خاص (لا يراه إلا الأعضاء المضافون)</label>
-    <div class="row" style="margin-top:14px">
-      <label>إضافة عضو للخادم (يوزر)</label>
-      <input id="ssMember" placeholder="username">
-    </div>
-    <div class="row">
-      <label>حجب الخادم عن عضو — Admin Straight (يوزر)</label>
-      <input id="ssBlock" placeholder="username">
-    </div>
-    <div class="modal-actions">
-      <button class="mOk" onclick="saveServerSettings()">حفظ التغييرات</button>
-      <button class="mNo" onclick="closeModal()">إغلاق</button>
-    </div>
-  `);
+/* ===================================================
+   الحذف
+=================================================== */
+function deleteVideo(id) {
+  if (!confirm("هل تريد حذف هذا الفيديو؟")) return;
+  const tx = db.transaction("videos", "readwrite");
+  tx.objectStore("videos").delete(id);
+  tx.oncomplete = () => loadVideos();
 }
 
-function saveServerSettings(){
-  const s = currentServer(); if(!s) return;
-  const name = $('#ssName').value.trim();
-  if(name) s.name = name;
-  s.isPrivate = $('#ssPrivate').checked;
-
-  const memName = $('#ssMember').value.trim();
-  if(memName){
-    const u = Object.values(DB.users).find(x => x.username.toLowerCase() === memName.toLowerCase());
-    if(u && !(s.members||[]).includes(u.id)){
-      s.members = s.members || []; s.members.push(u.id);
-      logAction(ME, `أضاف @${u.username} إلى خادم ${s.name}`);
-      toast('تمت إضافة العضو ✔', true);
-    } else if(!u) toast('العضو غير موجود');
-  }
-  const blockName = $('#ssBlock').value.trim();
-  if(blockName){
-    const u = Object.values(DB.users).find(x => x.username.toLowerCase() === blockName.toLowerCase());
-    if(u && !u.isOwner){
-      s.blocked = s.blocked || [];
-      if(!s.blocked.includes(u.id)) s.blocked.push(u.id);
-      logAction(ME, `حجب خادم ${s.name} عن @${u.username}`);
-      toast('تم حجب الخادم عن العضو ✔', true);
-    } else if(u && u.isOwner) toast('لا يمكن حجب الأونر');
-    else toast('العضو غير موجود');
-  }
-
-  const file = $('#ssIcon').files[0];
-  const persist = () => {
-    DB.servers[s.id] = s;
-    ref('servers/' + s.id).update({
-      name: s.name, isPrivate: s.isPrivate,
-      members: s.members, blocked: s.blocked, icon: s.icon || ''
-    }).then(() => { closeModal(); renderAll(); });
-  };
-  if(file){
-    const r = new FileReader();
-    r.onload = e => { s.icon = e.target.result; persist(); };
-    r.readAsDataURL(file);
-  } else persist();
+function clearAll() {
+  if (!confirm("⚠️ هل تريد حذف كل الفيديوهات؟ لا يمكن التراجع!")) return;
+  const tx = db.transaction("videos", "readwrite");
+  tx.objectStore("videos").clear();
+  tx.oncomplete = () => loadVideos();
 }
-
-function addCategory(){
-  const s = currentServer(); if(!s || !isServerAdmin(s, ME)) return;
-  openModal(`
-    <h3>إضافة كاتجوري</h3>
-    <div class="row"><label>اسم الكاتجوري</label><input id="newCatName" placeholder="مثال: رومات عامة"></div>
-    <div class="modal-actions">
-      <button class="mOk" onclick="createCategory()">إضافة</button>
-      <button class="mNo" onclick="closeModal()">إلغاء</button>
-    </div>
-  `);
-}
-function createCategory(){
-  const s = currentServer();
-  const name = $('#newCatName').value.trim();
-  if(!name){ toast('اكتب اسم الكاتجوري'); return; }
-  s.categories.push({ id:uid(), name, channels:[] });
-  DB.servers[s.id] = s;
-  ref('servers/' + s.id + '/categories').set(s.categories).then(() => {
-    logAction(ME, `أنشأ كاتجوري "${name}" في خادم ${s.name}`);
-    closeModal(); renderAll();
-    toast('تمت إضافة الكاتجوري ✔', true);
-  });
-}
-
-function addChannel(catId){
-  const s = currentServer(); if(!s || !isServerAdmin(s, ME)) return;
-  const roles = s.roles || [];
-  openModal(`
-    <h3>إضافة روم جديد</h3>
-    <div class="row"><label>اسم الروم</label><input id="newChName" placeholder="مثال: الشات العام"></div>
-    <label class="chk"><input type="checkbox" id="newChAdmin"> روم للإدارة فقط 🔒</label>
-    <div class="row" style="margin-top:12px">
-      <label>الصلاحيات — من يمكنه رؤية الروم؟</label>
-      ${roles.length ? roles.map(r => `
-        <label class="chk"><input type="checkbox" class="roleChk" value="${r.id}"> ${esc(r.name)}</label>
-      `).join('') : '<div class="empty">لا توجد رتب — أنشئ رتبًا من إعدادات الخادم</div>'}
-    </div>
-    <div class="modal-actions">
-      <button class="mOk" onclick="createChannel('${catId}')">إضافة</button>
-      <button class="mNo" onclick="closeModal()">إلغاء</button>
-    </div>
-  `);
-}
-function createChannel(catId){
-  const s = currentServer();
-  const cat = s.categories.find(c => c.id === catId); if(!cat) return;
-  const name = $('#newChName').value.trim();
-  if(!name){ toast('اكتب اسم الروم'); return; }
-  const adminOnly = $('#newChAdmin').checked;
-  const roles = [...document.querySelectorAll('.roleChk:checked')].map(i => i.value);
-  const ch = { id:uid(), name, adminOnly, roles, messages:[] };
-  cat.channels.push(ch);
-  DB.servers[s.id] = s;
-  ref('servers/' + s.id + '/categories').set(s.categories).then(() => {
-    logAction(ME, `أنشأ روم "${name}" في خادم ${s.name}`);
-    closeModal();
-    state.view = 'server'; state.channelId = ch.id;
-    renderAll();
-    toast('تم إنشاء الروم ✔', true);
-  });
-}
-
-/* =====================================================================
-   Profile
-   ===================================================================== */
-function openProfileEditor(){
-  openModal(`
-    <h3>تعديل الحساب</h3>
-    <div class="hint">اختر ما تريد تغييره ثم اضغط Done.</div>
-    <div class="row"><label>الاسم الظاهر</label><input id="pfDisplay" value="${esc(ME.display)}"></div>
-    <div class="row"><label>اسم المستخدم</label><input id="pfUser" value="${esc(ME.username)}"></div>
-    <div class="row"><label>كلمة المرور الجديدة</label><input id="pfPass" type="password" placeholder="اتركها فارغة لعدم التغيير"></div>
-    <div class="row"><label>الصورة الشخصية</label><input id="pfAvatar" type="file" accept="image/*"></div>
-    <div class="modal-actions">
-      <button class="mOk" onclick="saveProfile()">Done ✓</button>
-      <button class="mNo" onclick="closeModal()">إلغاء</button>
-    </div>
-  `);
-}
-function saveProfile(){
-  const d = $('#pfDisplay').value.trim();
-  const un = $('#pfUser').value.trim();
-  const pw = $('#pfPass').value;
-  const file = $('#pfAvatar').files[0];
-
-  if(d) ME.display = d;
-  if(un && un.toLowerCase() !== ME.username.toLowerCase()){
-    if(!/^[A-Za-z0-9_.]{3,16}$/.test(un)){ toast('اسم المستخدم غير صالح'); return; }
-    if(Object.values(DB.users).some(u => u.id !== ME.id && u.username.toLowerCase() === un.toLowerCase())){ toast('الاسم مستخدم بالفعل'); return; }
-    ME.username = un;
-  }
-  if(pw){
-    if(pw.length < 4){ toast('كلمة المرور قصيرة'); return; }
-    ME.password = pw;
-  }
-  const finish = () => {
-    DB.users[ME.id] = ME;
-    saveUser(ME.id);
-    closeModal(); renderAll();
-    toast('تم تحديث الحساب ✔', true);
-  };
-  if(file){
-    const r = new FileReader();
-    r.onload = e => { ME.avatar = e.target.result; finish(); };
-    r.readAsDataURL(file);
-  } else finish();
-}
-
-/* =====================================================================
-   Owner Admin Panel
-   ===================================================================== */
-function openAdminPanel(){
-  if(!ME.isOwner) return;
-  openModal(`
-    <h3>لوحة تحكم الأونر <span class="tag">OWNER</span></h3>
-    <div class="hint">تحكم كامل: الحظر، الكتم، التايم أوت، حذف الخوادم، والتوثيق ⭐</div>
-    <div class="row"><label>اسم المستخدم للعضو المستهدف</label><input id="adUser" placeholder="username"></div>
-    <div class="row">
-      <label>الإجراء</label>
-      <select id="adAction">
-        <option value="ban">حظر من الموقع (Ban)</option>
-        <option value="unban">فك الحظر (Unban)</option>
-        <option value="timeout">تايم أوت (Timeout)</option>
-        <option value="mute">كتم (Mute)</option>
-        <option value="unmute">فك الكتم (Unmute)</option>
-        <option value="verify">توثيق ⭐</option>
-        <option value="unverify">إزالة التوثيق</option>
-        <option value="delserver">حذف خادم يملكه العضو</option>
-      </select>
-    </div>
-    <div class="row"><label>المدة بالدقائق (للتايم أوت فقط)</label><input id="adMins" type="number" value="10" min="1"></div>
-    <div class="row" id="adSrvRow" style="display:none">
-      <label>اسم الخادم المراد حذفه</label><input id="adSrvName" placeholder="اسم الخادم">
-    </div>
-    <div class="modal-actions">
-      <button class="mOk" onclick="applyAdminAction()">تنفيذ</button>
-      <button class="mNo" onclick="closeModal()">إغلاق</button>
-    </div>
-  `);
-  $('#adAction').addEventListener('change', e => {
-    $('#adSrvRow').style.display = e.target.value === 'delserver' ? 'block' : 'none';
-  });
-}
-
-function applyAdminAction(){
-  const un = $('#adUser').value.trim();
-  const action = $('#adAction').value;
-  const mins = parseInt($('#adMins').value) || 10;
-  const u = Object.values(DB.users).find(x => x.username.toLowerCase() === un.toLowerCase());
-  if(!u){ toast('العضو غير موجود'); return; }
-  if(u.isOwner && action !== 'verify'){ toast('لا يمكن تنفيذ ذلك على الأونر'); return; }
-
-  switch(action){
-    case 'ban':
-      u.banned = true; logAction(ME, `حظر العضو @${u.username}`); toast('تم الحظر ✔', true); break;
-    case 'unban':
-      u.banned = false; logAction(ME, `فك الحظر عن @${u.username}`); toast('تم فك الحظر ✔', true); break;
-    case 'timeout':
-      u.timeout = now() + mins * 60000;
-      logAction(ME, `تايم أوت ${mins} دقيقة للعضو @${u.username}`);
-      toast(`تم إعطاء تايم أوت ${mins} دقيقة ✔`, true); break;
-    case 'mute':
-      u.mute = true; logAction(ME, `كتم العضو @${u.username}`); toast('تم الكتم ✔', true); break;
-    case 'unmute':
-      u.mute = false; u.timeout = 0;
-      logAction(ME, `فك الكتم عن @${u.username}`); toast('تم فك الكتم ✔', true); break;
-    case 'verify':
-      u.star = true; logAction(ME, `وثّق العضو @${u.username} ⭐`); toast('تم التوثيق ⭐', true); break;
-    case 'unverify':
-      u.star = false; logAction(ME, `أزال توثيق @${u.username}`); toast('تم إزالة التوثيق', true); break;
-    case 'delserver': {
-      const sn = $('#adSrvName').value.trim();
-      const srv = Object.values(DB.servers).find(s => s.ownerId === u.id && s.name.toLowerCase() === sn.toLowerCase());
-      if(!srv){ toast('لم يتم العثور على الخادم'); return; }
-      if(srv.id === 's_main' || srv.id === 's_owner'){ toast('لا يمكن حذف خادم أساسي'); return; }
-      delete DB.servers[srv.id];
-      ref('servers/' + srv.id).remove();
-      if(state.serverId === srv.id){ state.serverId = 's_main'; pickFirstChannel('s_main'); }
-      logAction(ME, `حذف خادم "${srv.name}" المملوك لـ @${u.username}`);
-      toast('تم حذف الخادم ✔', true); break;
-    }
-  }
-  DB.users[u.id] = u;
-  saveUser(u.id);
-  closeModal(); renderAll();
-}
-
-/* =====================================================================
-   Init
-   ===================================================================== */
-(function init(){
-  if(!fbReady){
-    return;
-  }
-
-  // بدء المراقبة
-  watch();
-
-  // بعد أول ثانية، تهيئة الخوادم الأساسية
-  setTimeout(ensureBase, 800);
-
-  // شاشة الدخول
-  setTimeout(() => {
-    // أعد تشغيل ensureBase بعد التحميل الكامل
-    ensureBase();
-    $('#loadingScreen').classList.add('hidden');
-
-    let savedId = null;
-    try { savedId = localStorage.getItem('itex_session'); } catch(e){}
-    const saved = savedId ? DB.users[savedId] : null;
-
-    if(saved && !saved.banned){
-      enterApp(saved);
-    } else {
-      $('#authScreen').classList.remove('hidden');
-    }
-  }, 1500);
-})();
-
-window.addEventListener('resize', () => {
-  if(window.innerWidth > 920) closePanels();
-});
-document.addEventListener('keydown', e => { if(e.key === 'Escape') closeModal(); });
 </script>
 </body>
 </html>
